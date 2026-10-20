@@ -10,7 +10,7 @@ Iscrizioni online, gironi automatici, segnapunti dal telefono, classifiche live 
 ## Cosa fa
 
 **Prima del torneo**
-- Procedura guidata: nome, data, luogo, categorie (White, Green, Red già pronte, con colore ed emoji) e regole di gioco.
+- Procedura guidata: nome, data, luogo, categorie (White, Green, Red già pronte, ognuna con colore e simbolo a scelta) e regole di gioco.
 - Guida introduttiva al primo accesso, da rivedere quando serve dal menu account.
 - Logo dell'organizzatore su modulo di iscrizione, pagina pubblica e stampe.
 - Società con logo, squadre e atleti per categoria, referenti (visibili solo all'organizzatore).
@@ -18,10 +18,11 @@ Iscrizioni online, gironi automatici, segnapunti dal telefono, classifiche live 
 - Gironi creati in automatico in base ai campi disponibili, separando le squadre della stessa società. Nomi di fantasia o nome della società.
 
 **Durante il torneo**
+- **Presenze all'arrivo**: si segnano le squadre che arrivano e i gironi si creano solo con quelle presenti; se manca qualcuno a gironi fatti, si toglie in un clic e il calendario si aggiorna.
 - Punteggi inseriti direttamente sulla scheda della partita.
 - Per ogni girone, sempre a portata di mano: andata e ritorno, 1, 2 o 3 set, partite a tempo con i minuti.
 - **Link segnapunti** per ogni partita (QR, WhatsApp): punto per punto in diretta o risultato finale, cronometro facoltativo, schermo sempre acceso.
-- Pagina pubblica live: classifiche, partite, tabellone, "in campo ora", squadre preferite, info, menu del bar, sponsor.
+- Pagina pubblica live: **la tua prossima partita** per chi segue una squadra (con quante partite mancano), classifiche, partite, tabellone, "in campo ora", squadre preferite, info, menu del bar, sponsor.
 - Modalità schermo per TV e proiettori: le classifiche scorrono da sole con il QR per il pubblico.
 - Funziona anche con connessione instabile: le modifiche si salvano appena torna la rete.
 

@@ -1,7 +1,7 @@
 // Pagina di una categoria: creazione gironi, risultati, tabellone, classifiche, fasi successive
 import {
-  catNome,
-  esc, uid, plurale, clamp, intOr, regoleDi, descriviPunti, squadreTotali, suggerisciGironi, dimensioniUniformi,
+  catNome, societaPresenti,
+  esc, catIcona, uid, plurale, clamp, intOr, regoleDi, descriviPunti, squadreTotali, suggerisciGironi, dimensioniUniformi,
   creaGironi, classifica, classificaAvulsa, risolviTabellone, creaTabellone, DIMENSIONI_TABELLONE, setDa, setPerDb,
   validaSet, isFinita, isInCorso, esito, rigeneraPartite, generaPartite, squadraDi, serpentina, statisticheCategoria,
   nomiSquadreCategoria, contaPartite, formatOra, normalizzaPunti,
@@ -19,7 +19,7 @@ export function vistaCategoria(c) {
   const b = S.builder[c.id];
   const tab = S.catTab[c.id] || 'partite';
   const head = `<div class="page-head cat-head" style="--cat:${esc(c.colore)}">
-      <div><h1 class="cat-title"><i class="dot dot-xl" style="background:${esc(c.colore)}"></i>${esc(catNome(c))}</h1>
+      <div><h1 class="cat-title">${catIcona(c, 'xl')}${esc(catNome(c))}</h1>
         <p class="muted small" style="margin-top:6px">${esc(descriviPunti(reg.punti))}, ${plurale(reg.set, 'set', 'set')} per partita${reg.personalizzate ? ' (regole della categoria)' : ''}</p></div>
       <div class="row-wrap">
         ${c.fasi.length ? `<a class="btn" href="${esc(link('stampa.html', { t: S.tid, c: c.id }))}" target="_blank" rel="noopener">${icon('print')}Stampa</a>` : ''}
@@ -53,14 +53,23 @@ function setupDi(c) {
 
 function vistaSetup(c) {
   const t = S.torneo, st = setupDi(c), reg = regoleDi(t, c);
-  const tot = squadreTotali(t, c.id);
-  const conSquadre = t.societa.filter(s => intOr(s.squadre?.[c.id]) > 0);
+  const soc = societaPresenti(t, c.id), pres = !!t.presenze[c.id];
+  const tot = soc.reduce((n, s) => n + clamp(intOr(s.squadre?.[c.id]), 0, 50), 0);
+  const conSquadre = soc.filter(s => intOr(s.squadre?.[c.id]) > 0);
+  const daSegnare = pres ? t.societa.filter(s => intOr(s.squadre?.[c.id]) > 0 && !(s.id in t.presenze[c.id])).length : 0;
   const sug = suggerisciGironi(tot, c.campi || 1);
   const nG = clamp(st.gironi ?? sug?.gironi ?? 1, 1, Math.max(1, Math.floor(tot / 2)));
   const dim = tot >= 2 ? dimensioniUniformi(tot, nG) : [];
   const nSet = st.set ?? reg.set;
   const partite = dim.reduce((s, n) => s + n * (n - 1) / 2, 0) * (st.ritorno ? 2 : 1);
 
+  if (tot < 2 && pres) {
+    return `<section class="panel">${vuoto({
+      icona: 'presenze', titolo: tot ? 'Per ora è arrivata una sola squadra' : 'Nessuna squadra segnata come presente',
+      testo: `Le presenze di questa categoria sono cominciate: i gironi useranno solo le squadre arrivate. ${daSegnare ? `Mancano da segnare ${plurale(daSegnare, 'società', 'società')}.` : ''}`,
+      azioni: `<a class="btn btn-primary" href="${hashTorneo('presenze')}">${icon('presenze')}Vai alle presenze</a>`,
+    })}</section>`;
+  }
   if (tot < 2) {
     return `<section class="panel">${vuoto({
       icona: 'users', titolo: tot ? 'Serve almeno un\'altra squadra' : 'Nessuna squadra iscritta in questa categoria',
@@ -73,7 +82,8 @@ function vistaSetup(c) {
     <div class="panel-head"><h2>Crea i gironi</h2></div>
     <div class="panel-body stack-lg">
       <div>
-        <span class="label">${plurale(tot, 'squadra iscritta', 'squadre iscritte')}</span>
+        <span class="label">${pres ? `${plurale(tot, 'squadra presente', 'squadre presenti')} su ${squadreTotali(t, c.id)} iscritte` : plurale(tot, 'squadra iscritta', 'squadre iscritte')}</span>
+        ${daSegnare ? `<p class="note note-warn small" style="margin-top:8px">${plurale(daSegnare, 'società non è ancora stata segnata', 'società non sono ancora state segnate')} nelle presenze e non ${daSegnare === 1 ? 'entra' : 'entrano'} nei gironi. <a href="${hashTorneo('presenze')}">Vai alle presenze</a></p>` : !pres ? `<p class="hint" style="margin-top:6px">Il giorno del torneo segna chi arriva in <a href="${hashTorneo('presenze')}">Presenze</a>: i gironi useranno solo le squadre presenti.</p>` : ''}
         <div class="row-wrap" style="margin-top:8px">${conSquadre.map(s => `<span class="chip">${logoHtml(logoSoc(s.id), s.nome)}${esc(s.nome)}${intOr(s.squadre[c.id]) > 1 ? ` <b class="num">×${intOr(s.squadre[c.id])}</b>` : ''}</span>`).join('')}</div>
       </div>
       <div class="grid-2">
@@ -394,10 +404,11 @@ registra({
   suSet(el) { setupDi(cat(el.dataset.id)).set = +el.dataset.n; render(); },
   creaGironi(el) {
     const c = cat(el.dataset.id), st = setupDi(c), t = S.torneo, reg = regoleDi(t, c);
-    const tot = squadreTotali(t, c.id);
+    const soc = societaPresenti(t, c.id);
+    const tot = soc.reduce((n, s) => n + clamp(intOr(s.squadre?.[c.id]), 0, 50), 0);
     const nG = clamp(st.gironi ?? suggerisciGironi(tot, c.campi || 1)?.gironi ?? 1, 1, Math.max(1, Math.floor(tot / 2)));
     const usati = new Set(t.categorie.flatMap(k => [...nomiSquadreCategoria(k)]));
-    const gironi = creaGironi(t.societa, c.id, { dimensioni: dimensioniUniformi(tot, nG), nomi: st.nomi, pool: t.categorie.indexOf(c), set: st.set ?? reg.set, ritorno: st.ritorno, timer: reg.timer, nomiUsati: usati });
+    const gironi = creaGironi(soc, c.id, { dimensioni: dimensioniUniformi(tot, nG), nomi: st.nomi, pool: t.categorie.indexOf(c), set: st.set ?? reg.set, ritorno: st.ritorno, timer: reg.timer, nomiUsati: usati });
     gironi.forEach((g, i) => { if (nG <= (c.campi || 1)) g.campo = `Campo ${i + 1}`; });
     delete S.builder['setup:' + c.id];
     modifica(() => { c.fasi = [{ id: uid(), nome: 'Prima fase', tipo: 'gironi', gironi }]; });

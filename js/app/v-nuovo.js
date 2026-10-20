@@ -1,12 +1,12 @@
 // Procedura guidata "Nuovo torneo"
-import { esc, uid, COLORI, PUNTI_DEFAULT, CATEGORIE_DEFAULT, nuovoTorneo } from '../core.js';
+import { esc, catIcona, uid, COLORI, PUNTI_DEFAULT, CATEGORIE_DEFAULT, nuovoTorneo } from '../core.js';
 import { icon, toast } from '../ui.js';
 import { S, registra, render, vai } from './stato.js';
-import { editorRegole, swatches, sceltaEmoji } from './comp.js';
+import { editorRegole, swatches, sceltaIcona } from './comp.js';
 
 const MODELLI = {
   minivolley: CATEGORIE_DEFAULT,
-  under: [{ nome: 'Under 12', colore: '#7A3FD1', emoji: '🟣' }, { nome: 'Under 13', colore: '#D9730D', emoji: '🟠' }, { nome: 'Under 14', colore: '#0E8A9E', emoji: '🔵' }],
+  under: [{ nome: 'Under 12', colore: '#7A3FD1', icona: 'stella' }, { nome: 'Under 13', colore: '#D9730D', icona: 'fulmine' }, { nome: 'Under 14', colore: '#0E8A9E', icona: 'fiamma' }],
 };
 
 export function initNuovo() {
@@ -40,14 +40,16 @@ export function vistaNuovo() {
         <button class="btn btn-sm" data-a="nvModello" data-m="under">Under 12, 13, 14</button>
       </div>
       <ul class="cat-edit">${n.categorie.map((c, i) => `
-        <li>
-          <i class="dot dot-lg" style="background:${esc(c.colore)}"></i>
-          <div class="stack" style="gap:8px;flex:1;min-width:0">
-            <div class="row" style="gap:8px">${sceltaEmoji(c.emoji, `data-c="nvEmoji" data-id="${c.id}"`)}<input class="input" id="nv-cat-${c.id}" value="${esc(c.nome)}" placeholder="Nome categoria" aria-label="Nome categoria ${i + 1}" data-i="nvCat" data-id="${c.id}" maxlength="40"></div>
-            ${swatches(c.colore, `data-a="nvColore" data-id="${c.id}"`)}
+        <li class="ce">
+          <div class="ce-head">
+            ${catIcona(c, 'lg')}
+            <input class="input" id="nv-cat-${c.id}" value="${esc(c.nome)}" placeholder="Nome categoria" aria-label="Nome categoria ${i + 1}" data-i="nvCat" data-id="${c.id}" maxlength="40">
+            <button class="btn btn-ghost btn-icon btn-sm" data-a="nvSposta" data-id="${c.id}" data-d="-1" aria-label="Sposta su" ${i === 0 ? 'disabled' : ''}>${icon('up')}</button>
+            <button class="btn btn-ghost btn-icon btn-sm" data-a="nvSposta" data-id="${c.id}" data-d="1" aria-label="Sposta giù" ${i === n.categorie.length - 1 ? 'disabled' : ''}>${icon('down')}</button>
+            <button class="btn btn-ghost btn-icon btn-sm" data-a="nvTogliCat" data-id="${c.id}" aria-label="Rimuovi ${esc(c.nome || 'categoria')}" ${n.categorie.length < 2 ? 'disabled' : ''}>${icon('trash')}</button>
           </div>
-          <div class="cat-move"><button class="btn btn-ghost btn-icon btn-sm" data-a="nvSposta" data-id="${c.id}" data-d="-1" aria-label="Sposta su" ${i === 0 ? 'disabled' : ''}>${icon('up')}</button><button class="btn btn-ghost btn-icon btn-sm" data-a="nvSposta" data-id="${c.id}" data-d="1" aria-label="Sposta giù" ${i === n.categorie.length - 1 ? 'disabled' : ''}>${icon('down')}</button></div>
-          <button class="btn btn-ghost btn-icon" data-a="nvTogliCat" data-id="${c.id}" aria-label="Rimuovi ${esc(c.nome || 'categoria')}" ${n.categorie.length < 2 ? 'disabled' : ''}>${icon('trash')}</button>
+          <div class="pick-row"><span>Colore</span>${swatches(c.colore, `data-a="nvColore" data-id="${c.id}"`)}</div>
+          <div class="pick-row"><span>Simbolo</span>${sceltaIcona(c.colore, c.icona, `data-a="nvIcona" data-id="${c.id}"`)}</div>
         </li>`).join('')}
       </ul>
       <button class="btn" data-a="nvAggiungiCat" style="justify-self:start">${icon('plus')}Aggiungi categoria</button>
@@ -86,7 +88,7 @@ function valida(passo) {
 registra({
   nvCampo(el) { S.nuovo[el.dataset.k] = el.value; },
   nvCat(el) { const c = S.nuovo.categorie.find(x => x.id === el.dataset.id); if (c) c.nome = el.value; },
-  nvEmoji(el) { const c = S.nuovo.categorie.find(x => x.id === el.dataset.id); if (c) c.emoji = el.value; },
+  nvIcona(el) { const c = S.nuovo.categorie.find(x => x.id === el.dataset.id); if (c) { c.icona = el.dataset.icona; render(); } },
   nvColore(el) { const c = S.nuovo.categorie.find(x => x.id === el.dataset.id); if (c) { c.colore = el.dataset.colore; render(); } },
   nvSposta(el) {
     const l = S.nuovo.categorie, i = l.findIndex(x => x.id === el.dataset.id), j = i + +el.dataset.d;
@@ -99,7 +101,7 @@ registra({
     const usati = new Set(S.nuovo.categorie.map(c => c.colore));
     const colore = (COLORI.find(c => !usati.has(c.hex)) || COLORI[0]).hex;
     const id = uid();
-    S.nuovo.categorie.push({ id, nome: '', colore, emoji: '' });
+    S.nuovo.categorie.push({ id, nome: '', colore, icona: '' });
     render();
     document.getElementById('nv-cat-' + id)?.focus();
   },
@@ -116,7 +118,7 @@ registra({
     const n = S.nuovo;
     const t = nuovoTorneo({
       nome: n.nome.trim(), data: n.data, luogo: n.luogo.trim(), owner: S.user.uid,
-      categorie: n.categorie.map(c => ({ id: c.id, nome: c.nome.trim(), colore: c.colore, emoji: c.emoji || '' })),
+      categorie: n.categorie.map(c => ({ id: c.id, nome: c.nome.trim(), colore: c.colore, icona: c.icona || '' })),
       regole: { punti: n.punti, set: n.set, timer: n.timer },
     });
     try {

@@ -12,6 +12,7 @@ const GUIDE = {
   torneo: [
     { sel: '.sidenav', titolo: 'Il menu del torneo', testo: 'Ogni categoria ha i suoi gironi e la sua classifica. Il numero accanto indica quante partite sono già state giocate.' },
     { sel: '.sidenav a[href$="/societa"]', titolo: 'Società e squadre', testo: 'Inserisci le società con logo, squadre e numero di bambini per categoria. Da qui nascono i gironi.' },
+    { sel: '.sidenav a[href$="/presenze"]', titolo: "Presenze all'arrivo", testo: 'Il giorno del torneo segna le squadre che arrivano: i gironi si creano solo con quelle presenti. Se manca qualcuno a gironi fatti, la togli in un clic.' },
     { sel: '.sidenav a[href$="/iscrizioni"]', titolo: 'Iscrizioni online', testo: 'Apri il modulo e manda il link ai referenti: compilano dal telefono e tu approvi le richieste qui.' },
     { sel: '.sidenav a[href$="/pubblica"]', titolo: 'Pagina per i genitori', testo: 'Classifiche e risultati in diretta, informazioni, menu del bar e sponsor. Si apre dal QR e si può proiettare su uno schermo in palestra.' },
     { sel: '.sidenav a[href$="/impostazioni"]', titolo: 'Impostazioni', testo: 'Punti in classifica, set per partita, logo dell\'organizzatore, stampa del programma di sala e backup.' },
@@ -37,11 +38,18 @@ function segnaFatta(nome) { try { localStorage.setItem(CHIAVE + nome, '1'); } ca
 export function tourAttivo() { return !!attiva; }
 
 // Da chiamare dopo ogni disegno della pagina
-export function tourSeServe(nome) {
+// paginaAttuale() dice quale guida vale ora: se nel frattempo si è cambiata pagina non parte
+export function tourSeServe(nome, paginaAttuale) {
   if (attiva) { posiziona(); return; }
-  if (!nome || fatta(nome) || document.querySelector('.modal-backdrop, dialog[open]')) return;
-  setTimeout(() => { if (!attiva && !fatta(nome)) avviaTour(nome); }, 500);
+  if (!nome || fatta(nome)) return;
+  setTimeout(() => {
+    if (attiva || fatta(nome) || paginaAttuale() !== nome || document.querySelector('.modal-backdrop')) return;
+    avviaTour(nome);
+  }, 600);
 }
+
+// Cambiando pagina la guida in corso si chiude
+export function chiudiTour() { if (attiva) chiudi(); }
 
 export function riavviaGuide() {
   try { Object.keys(GUIDE).forEach(n => localStorage.removeItem(CHIAVE + n)); } catch { /* storage non disponibile */ }

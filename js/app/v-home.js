@@ -1,5 +1,5 @@
 // Elenco dei tornei
-import { esc, catNome, plurale, squadreTotali, normalizzaTorneo } from '../core.js';
+import { esc, catIcona, catNome, plurale, squadreTotali, normalizzaTorneo } from '../core.js';
 import { link } from '../config.js';
 import { icon, toast, conferma, scaricaFile, scegliFile, slug, modal } from '../ui.js';
 import { S, registra, vai, render } from './stato.js';
@@ -22,7 +22,7 @@ function rigaTorneo(t) {
       <span class="t-info">
         <strong>${esc(t.nome)}</strong>
         <span class="t-meta"><span>${esc(data)}</span>${t.luogo ? `<span>${icon('pin')}${esc(t.luogo)}</span>` : ''}</span>
-        <span class="t-cats">${(t.categorie || []).map(c => `<span class="cat-tag small"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(catNome(c))}</span>`).join('')}
+        <span class="t-cats">${(t.categorie || []).map(c => `<span class="cat-tag small">${catIcona(c)}${esc(catNome(c))}</span>`).join('')}
           <span class="muted small">${plurale(t.societa?.length || 0, 'società', 'società')}, ${plurale(tot, 'squadra', 'squadre')}</span></span>
       </span>
     </a>
@@ -115,6 +115,7 @@ registra({
     const nuovo = normalizzaTorneo({ ...dati, nome: `${t.nome} (copia)`, createdAt: Date.now(), archiviato: false, data: '' });
     nuovo.categorie = nuovo.categorie.map(c => ({ ...c, fasi: [] }));
     nuovo.iscrizioni.aperte = false;
+    nuovo.presenze = {}; nuovo.assenti = {};
     const tid = await S.store.createTorneo(nuovo);
     const media = await S.store.getMedia(id);
     for (const [k, v] of Object.entries(media)) await S.store.setMedia(tid, k, v);

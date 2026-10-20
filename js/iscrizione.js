@@ -1,6 +1,6 @@
 // Modulo pubblico di iscrizione delle società
 import { getStore } from './store.js';
-import { esc, catNome, normalizzaTorneo, formatData, intOr, clamp } from './core.js';
+import { esc, catIcona, catNome, normalizzaTorneo, formatData, intOr, clamp } from './core.js';
 import { icon, applicaTema, comprimiImmagine, scegliFile, logoHtml, toast } from './ui.js';
 
 applicaTema();
@@ -57,7 +57,7 @@ function disegna() {
         const ci = isc.catInfo[c.id] || {};
         const det = [ci.formato, ci.anni ? `nati nel ${ci.anni}` : '', ci.minAtleti ? `almeno ${ci.minAtleti} atleti per squadra` : ''].filter(Boolean).join(', ');
         return `<div class="is-cat">
-          <div><span class="cat-tag"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(catNome(c))}</span></div>
+          <div><span class="cat-tag">${catIcona(c)}${esc(catNome(c))}</span></div>
           ${det ? `<small>${esc(det)}</small>` : ''}
           <div class="cell c-sq"><span class="lbl">Squadre</span><span class="stepper"><button type="button" data-step="-1" data-for="sq-${c.id}" aria-label="Meno squadre ${esc(catNome(c))}">−</button><input id="sq-${c.id}" type="number" min="0" max="20" value="0" aria-label="Squadre ${esc(catNome(c))}"><button type="button" data-step="1" data-for="sq-${c.id}" aria-label="Più squadre ${esc(catNome(c))}">+</button></span></div>
           <div class="cell c-at"><span class="lbl">Atleti</span><input class="input input-num" id="at-${c.id}" type="number" min="0" max="999" placeholder="0" aria-label="Atleti ${esc(catNome(c))}"></div>

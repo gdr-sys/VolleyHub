@@ -72,7 +72,7 @@
   <script type="module">
     import { getStore } from './js/store.js';
     import { link } from './js/config.js';
-    import { esc, catNome, plurale, normalizzaTorneo, formatData, regoleDi, classifica, classificaAvulsa, risolviTabellone, squadraDi, esito, descriviPunti } from './js/core.js';
+    import { esc, catIcona, catNome, plurale, normalizzaTorneo, formatData, regoleDi, classifica, classificaAvulsa, risolviTabellone, squadraDi, esito, descriviPunti } from './js/core.js';
     import { qrSvg } from './js/ui.js';
     const qs = new URLSearchParams(location.search);
     const TID = qs.get('t'), CID = qs.get('c'), FID = qs.get('f'), GID = qs.get('g'), TIPO = qs.get('tipo');
@@ -126,7 +126,7 @@
       doc.innerHTML = `<div class="doc-head">${marchio(48)}<div><h1>${esc(t.nome)}</h1><p>${meta}${meta ? '. ' : ''}Aggiornato alle ${new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</p></div></div>
       ${cats.map(c => {
         const reg = regoleDi(t, c);
-        return `<section class="cat" style="--c:${esc(c.colore)}"><h2><i class="dot dot-lg" style="background:${esc(c.colore)}"></i>${esc(catNome(c))}</h2>
+        return `<section class="cat" style="--c:${esc(c.colore)}"><h2>${catIcona(c, 'lg')}${esc(catNome(c))}</h2>
         <p class="tiny muted">Punti: ${esc(descriviPunti(reg.punti))}. A parità: differenza set, differenza punti, punti fatti.</p>
         ${c.fasi.filter(f => !FID || f.id === FID).map(f => {
           if (f.tipo === 'elim') {

@@ -1,5 +1,5 @@
 // Società partecipanti
-import { esc, uid, plurale, intOr, clamp, squadreTotali } from '../core.js';
+import { esc, catIcona, uid, plurale, intOr, clamp, squadreTotali } from '../core.js';
 import { icon, toast, conferma, modal, comprimiImmagine, scegliFile, logoHtml } from '../ui.js';
 import { S, registra, modifica, societa, logoSoc, hashTorneo } from './stato.js';
 import { vuoto } from './comp.js';
@@ -13,7 +13,7 @@ export function vistaSocieta() {
 
   return `<div class="page-head"><h1>Società</h1>
       <div class="row-wrap"><a class="btn" href="${hashTorneo('iscrizioni')}">${icon('form')}Iscrizioni online</a><button class="btn btn-accent" data-a="nuovaSocieta">${icon('plus')}Aggiungi società</button></div></div>
-    ${t.societa.length ? `<div class="totals">${cats.map(c => `<div style="--cat:${esc(c.colore)}"><span class="cat-tag small"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(c.nome)}</span><b class="num">${squadreTotali(t, c.id)}</b><span class="muted small">squadre${totAtleti(c) ? `, ${totAtleti(c)} atleti` : ''}</span></div>`).join('')}</div>` : ''}
+    ${t.societa.length ? `<div class="totals">${cats.map(c => `<div style="--cat:${esc(c.colore)}"><span class="cat-tag small">${catIcona(c)}${esc(c.nome)}</span><b class="num">${squadreTotali(t, c.id)}</b><span class="muted small">squadre${totAtleti(c) ? `, ${totAtleti(c)} atleti` : ''}</span></div>`).join('')}</div>` : ''}
     ${!t.societa.length ? `<section class="panel">${vuoto({ icona: 'users', titolo: 'Nessuna società ancora', testo: 'Aggiungile a mano oppure apri le iscrizioni online: le società compilano il modulo e tu approvi con un clic.', azioni: `<button class="btn btn-accent" data-a="nuovaSocieta">${icon('plus')}Aggiungi società</button><a class="btn" href="${hashTorneo('iscrizioni')}">${icon('form')}Apri le iscrizioni</a>` })}</section>`
     : `<ul class="soc-list">${ordinate.map(s => {
       const ref = contatti[s.id] || [];
@@ -21,7 +21,7 @@ export function vistaSocieta() {
         ${logoHtml(logoSoc(s.id), s.nome, true)}
         <div class="soc-main">
           <strong>${esc(s.nome)}</strong>
-          <div class="row-wrap" style="gap:6px;margin-top:6px">${cats.map(c => intOr(s.squadre?.[c.id]) ? `<span class="chip"><i class="dot" style="background:${esc(c.colore)}"></i><span>${esc(c.nome)}: <b class="num">${intOr(s.squadre[c.id])}</b> ${intOr(s.squadre[c.id]) === 1 ? 'squadra' : 'squadre'}${intOr(s.atleti?.[c.id]) ? `, ${intOr(s.atleti[c.id])} atleti` : ''}</span></span>` : '').join('') || '<span class="muted small">Nessuna squadra indicata</span>'}</div>
+          <div class="row-wrap" style="gap:6px;margin-top:6px">${cats.map(c => intOr(s.squadre?.[c.id]) ? `<span class="chip">${catIcona(c)}<span>${esc(c.nome)}: <b class="num">${intOr(s.squadre[c.id])}</b> ${intOr(s.squadre[c.id]) === 1 ? 'squadra' : 'squadre'}${intOr(s.atleti?.[c.id]) ? `, ${intOr(s.atleti[c.id])} atleti` : ''}</span></span>` : '').join('') || '<span class="muted small">Nessuna squadra indicata</span>'}</div>
           ${ref.length ? `<div class="soc-ref">${ref.map(r => `<span>${icon('users')}${esc(r.nome || 'Referente')}${r.tel ? ` <a href="tel:${esc(r.tel.replace(/[^\d+]/g, ''))}">${esc(r.tel)}</a>` : ''}${r.email ? ` <a href="mailto:${esc(r.email)}">${esc(r.email)}</a>` : ''}</span>`).join('')}</div>` : ''}
         </div>
         <div class="row"><button class="btn btn-sm" data-a="modificaSocieta" data-id="${s.id}">${icon('edit')}Modifica</button></div>
@@ -49,7 +49,7 @@ export async function finestraSocieta(s, precompila = null) {
       <div class="row-wrap"><button type="button" class="btn btn-sm" id="ms-carica">${icon('image')}${logo ? 'Cambia logo' : 'Carica logo'}</button><button type="button" class="btn btn-sm btn-ghost" id="ms-togli" ${logo ? '' : 'hidden'}>Rimuovi logo</button><span class="hint">PNG o JPG, viene ridimensionato in automatico.</span></div>
       <div><span class="label">Squadre e atleti per categoria</span>
         <table class="tbl soc-cat-table"><thead><tr><th class="l">Categoria</th><th>Squadre</th><th>Atleti</th></tr></thead><tbody>
-        ${t.categorie.map(c => `<tr><td class="l"><span class="cat-tag"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(c.nome)}</span></td>
+        ${t.categorie.map(c => `<tr><td class="l"><span class="cat-tag">${catIcona(c)}${esc(c.nome)}</span></td>
           <td><span class="stepper"><button type="button" data-step="-1" aria-label="Meno squadre">−</button><input type="number" min="0" max="50" data-sq="${c.id}" value="${intOr(base.squadre?.[c.id])}" aria-label="Squadre ${esc(c.nome)}"><button type="button" data-step="1" aria-label="Più squadre">+</button></span></td>
           <td><input class="input input-num" style="width:84px;margin-left:auto" type="number" min="0" max="999" data-at="${c.id}" value="${intOr(base.atleti?.[c.id]) || ''}" placeholder="0" aria-label="Atleti ${esc(c.nome)}"></td></tr>`).join('')}
         </tbody></table></div>

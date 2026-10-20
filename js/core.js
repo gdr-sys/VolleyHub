@@ -67,18 +67,42 @@ export const COLORI = [
   { hex: '#8B4A2B', nome: 'Mattone' },
 ];
 
-// Emoji per riconoscere le categorie a colpo d'occhio
-export const EMOJI = ['⬜', '🟩', '🟥', '🟣', '🟠', '🔵', '🟡', '⚫', '🟤', '🔴', '⚪', '🩵', '🩶', '💜', '🧡'];
+// Simboli delle categorie: disegnati in bianco sul colore della categoria
+export const ICONE_CAT = [
+  { id: '', nome: 'Solo colore', svg: '' },
+  { id: 'palla', nome: 'Pallone', svg: '<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5c2.6 2.2 3.8 5.2 3.4 8.6M12 12c-3.2 1.8-6.4 1.9-8.2 1.2M12 12c1.3 3 3.6 5.2 6.4 6"/>' },
+  { id: 'stella', nome: 'Stella', svg: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>' },
+  { id: 'cuore', nome: 'Cuore', svg: '<path d="M12 19.5s-7-4.3-7-9.6A3.9 3.9 0 0 1 12 7.6a3.9 3.9 0 0 1 7 2.3c0 5.3-7 9.6-7 9.6z"/>' },
+  { id: 'fulmine', nome: 'Fulmine', svg: '<path d="M13 3.5L5.5 13H11l-1 7.5L17.5 11H12z"/>' },
+  { id: 'sole', nome: 'Sole', svg: '<circle cx="12" cy="12" r="3.6"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"/>' },
+  { id: 'luna', nome: 'Luna', svg: '<path d="M19.5 14.5A7.8 7.8 0 1 1 9.5 4.5a6.2 6.2 0 0 0 10 10z"/>' },
+  { id: 'fiamma', nome: 'Fiamma', svg: '<path d="M12 20.5a5.8 5.8 0 0 0 5.8-5.8c0-3.8-2.8-5.8-3.8-9.7-1 2-2.2 3-3.4 3.6C9 9.5 6.2 11 6.2 14.7A5.8 5.8 0 0 0 12 20.5z"/>' },
+  { id: 'montagna', nome: 'Montagna', svg: '<path d="M3.5 18.5l5.8-9.5 3.4 5.4 2.4-3.4 5.4 7.5z"/>' },
+  { id: 'foglia', nome: 'Foglia', svg: '<path d="M5.5 18.5C5.5 10.6 10.4 5.5 18.5 5.5c0 8.1-5.1 13-13 13zM5.5 18.5l6.5-6.5"/>' },
+  { id: 'fiore', nome: 'Fiore', svg: '<circle cx="12" cy="12" r="2.4"/><path d="M12 9.6a2.9 2.9 0 1 1 0-5.8 2.9 2.9 0 1 1 0 5.8zM12 14.4a2.9 2.9 0 1 0 0 5.8 2.9 2.9 0 1 0 0-5.8zM9.6 12a2.9 2.9 0 1 0-5.8 0 2.9 2.9 0 1 0 5.8 0zM14.4 12a2.9 2.9 0 1 1 5.8 0 2.9 2.9 0 1 1-5.8 0z"/>' },
+  { id: 'onda', nome: 'Onda', svg: '<path d="M3.5 9.5c1.9-1.8 3.8-1.8 5.7 0s3.8 1.8 5.7 0 3.8-1.8 5.6 0M3.5 15c1.9-1.8 3.8-1.8 5.7 0s3.8 1.8 5.7 0 3.8-1.8 5.6 0"/>' },
+  { id: 'corona', nome: 'Corona', svg: '<path d="M5 18h14M5 18L4 8l4.5 3.5L12 6l3.5 5.5L20 8l-1 10"/>' },
+  { id: 'scudo', nome: 'Scudo', svg: '<path d="M12 3.5l6.5 2.7v4.9c0 4.6-2.8 7.7-6.5 9.4-3.7-1.7-6.5-4.8-6.5-9.4V6.2z"/>' },
+  { id: 'razzo', nome: 'Razzo', svg: '<path d="M12 3.5c2.9 2 4.6 5.6 4.6 9.4L15 16H9l-1.6-3.1c0-3.8 1.7-7.4 4.6-9.4zM9.5 16l-1.8 3.5M14.5 16l1.8 3.5"/><circle cx="12" cy="10" r="1.4"/>' },
+  { id: 'zampa', nome: 'Zampa', svg: '<circle cx="6.8" cy="10.2" r="1.6"/><circle cx="10.2" cy="6.6" r="1.6"/><circle cx="13.8" cy="6.6" r="1.6"/><circle cx="17.2" cy="10.2" r="1.6"/><path d="M12 11.8c-2.8 0-4.8 2.9-4.8 5.2 0 1.5 1.4 2 2.8 1.5s2.6-.5 4 0 2.8 0 2.8-1.5c0-2.3-2-5.2-4.8-5.2z"/>' },
+];
 
 // Categorie proposte per un nuovo torneo
 export const CATEGORIE_DEFAULT = Object.freeze([
-  { nome: 'White', colore: '#1E40AF', emoji: '⬜' },
-  { nome: 'Green', colore: '#166534', emoji: '🟩' },
-  { nome: 'Red', colore: '#991B1B', emoji: '🟥' },
+  { nome: 'White', colore: '#1E40AF', icona: '' },
+  { nome: 'Green', colore: '#166534', icona: '' },
+  { nome: 'Red', colore: '#991B1B', icona: '' },
 ]);
 
-// Nome della categoria con la sua emoji, come appare ovunque
-export const catNome = c => (c?.emoji ? `${c.emoji} ` : '') + (c?.nome || '');
+export const catNome = c => c?.nome || '';
+
+// Contrassegno della categoria: quadratino nel suo colore con il simbolo scelto.
+// Senza colore eredita --c dal contenitore (anteprime nel selettore).
+export function catIcona(c, taglia = '') {
+  const ic = ICONE_CAT.find(x => x.id === (c?.icona || ''));
+  const stile = c?.colore ? ` style="--c:${esc(c.colore)}"` : '';
+  return `<span class="cat-ic${taglia ? ' cat-ic-' + taglia : ''}"${stile} aria-hidden="true">${ic?.svg ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic.svg}</svg>` : ''}</span>`;
+}
 
 // ── Regole di punteggio ────────────────────────────────────
 // punti.perSet: punti per ogni set vinto; vittoria/pareggio/sconfitta: bonus a fine partita.
@@ -541,6 +565,14 @@ export function nomiSquadreCategoria(cat) {
   return s;
 }
 
+// Società con le squadre arrivate al posto delle iscritte, se per la categoria sono cominciate le presenze.
+// Chi non è ancora stato segnato non conta.
+export function societaPresenti(torneo, catId) {
+  const pr = torneo.presenze?.[catId];
+  if (!pr) return torneo.societa || [];
+  return (torneo.societa || []).map(s => ({ ...s, squadre: { ...s.squadre, [catId]: s.id in pr ? Math.min(intOr(pr[s.id]), clamp(intOr(s.squadre?.[catId]), 0, 50)) : 0 } }));
+}
+
 export function squadreTotali(torneo, catId) {
   return (torneo.societa || []).reduce((t, s) => t + clamp(intOr(s.squadre?.[catId]), 0, 50), 0);
 }
@@ -551,8 +583,9 @@ export function nuovoTorneo({ nome, data, luogo, owner, categorie, regole }) {
     owner, nome, data: data || '', luogo: luogo || '',
     createdAt: Date.now(), archiviato: false,
     regole: { punti: normalizzaPunti(regole?.punti), set: clamp(intOr(regole?.set, 2), 1, 5), timer: clamp(intOr(regole?.timer, 0), 0, 90) },
-    categorie: (categorie || []).map(c => ({ id: c.id || uid(), nome: c.nome, colore: c.colore, emoji: c.emoji || '', campi: c.campi || 0, regole: null, fasi: [] })),
+    categorie: (categorie || []).map(c => ({ id: c.id || uid(), nome: c.nome, colore: c.colore, icona: c.icona || '', campi: c.campi || 0, regole: null, fasi: [] })),
     societa: [],
+    presenze: {}, assenti: {},
     live: { sponsor: { attivo: false, gruppi: [] }, info: { attivo: false, blocchi: [] }, menu: { attivo: false, sezioni: [], note: '' } },
     iscrizioni: { aperte: false, scadenza: '', testoSquadre: '', testoRegolamento: 'La società, inviando questo modulo, dichiara di aver letto il regolamento del torneo e di accettarlo.', disclaimer: '', catInfo: {} },
   };
@@ -569,7 +602,7 @@ export function normalizzaTorneo(t) {
     menu: { ...base.live.menu, ...(t.live?.menu || {}) },
   };
   out.iscrizioni = { ...base.iscrizioni, ...(t.iscrizioni || {}), catInfo: { ...(t.iscrizioni?.catInfo || {}) } };
-  out.categorie = (t.categorie || []).map(c => ({ campi: 0, regole: null, fasi: [], emoji: '', ...c }));
+  out.categorie = (t.categorie || []).map(({ emoji, ...c }) => ({ campi: 0, regole: null, fasi: [], icona: '', ...c }));
   out.societa = (t.societa || []).map(s => ({ id: s.id || uid(), nome: s.nome || 'Società', squadre: { ...(s.squadre || {}) }, atleti: { ...(s.atleti || {}) }, logo: !!s.logo }));
   return out;
 }

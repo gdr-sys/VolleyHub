@@ -193,3 +193,24 @@ body.screen { background: #0C1424; color: #fff; overflow: hidden; --ink: #E9EEF8
 .sc-empty h1 { font-size: 4vw; }
 .sc-empty p { color: #9AA6BF; font-size: 1.8vw; }
 .lv-org { width: 52px; height: 52px; border-radius: 12px; background: #fff; object-fit: contain; padding: 3px; flex: none; }
+
+/* La tua prossima partita */
+.lv-next { background: #0D182F; border-top: 1px solid rgba(255,255,255,.08); }
+.lv-next-in { max-width: 980px; margin: 0 auto; display: flex; gap: 10px; overflow-x: auto; padding: 12px 16px 14px; scrollbar-width: thin; }
+.lv-next-card { flex: 0 0 auto; width: min(300px, calc(100vw - 48px)); display: grid; gap: 5px; text-align: left; padding: 11px 14px 12px; border-radius: 14px; border: 1px solid rgba(255,201,60,.35); background: linear-gradient(180deg, #1C2C50, #172440); color: #fff; font: inherit; cursor: pointer; }
+.lv-next-card:hover { border-color: #FFC93C; }
+.lv-next-card:focus-visible { outline: 3px solid #FFC93C; outline-offset: 2px; }
+.lv-next-top { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #FFC93C; }
+.lv-next-top .ic { width: 14px; height: 14px; fill: #FFC93C; }
+.lv-next-teams { display: grid; line-height: 1.25; }
+.lv-next-teams b { font-size: 18px; }
+.lv-next-teams span { font-size: 14px; color: #C9D2E6; }
+.lv-next-meta { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #9AA6BF; }
+.lv-next-meta .cat-ic { --s: 15px; }
+.lv-next-st { justify-self: start; display: inline-flex; align-items: center; gap: 7px; margin-top: 2px; padding: 4px 10px; border-radius: 99px; background: rgba(255,255,255,.08); font-size: 13px; font-weight: 700; color: #E6EBF5; }
+.lv-next-st.subito { background: #FFC93C; color: #13213F; }
+.lv-next-st.live { background: rgba(255,93,110,.16); color: #FF8794; }
+.lv-next-st.live i { width: 8px; height: 8px; border-radius: 50%; background: #FF5D6E; animation: pulse 1.4s infinite; }
+.lv-next-st .num { color: #FFC93C; font-size: 15px; }
+.lv-next-st .num i { font-style: normal; margin: 0 1px; color: #9AA6BF; }
+.lv-next-st .num span + span { margin-left: 6px; }

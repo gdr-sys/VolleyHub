@@ -1,12 +1,13 @@
 // Contenitore del torneo: navigazione laterale, panoramica, impostazioni
-import { esc, catNome, plurale, formatData, contaPartite, squadreTotali, regoleDi, descriviPunti, elencoPartite, isInCorso, uid, COLORI } from '../core.js';
+import { esc, catIcona, catNome, plurale, formatData, contaPartite, squadreTotali, regoleDi, descriviPunti, elencoPartite, isInCorso, uid, COLORI } from '../core.js';
 import { link } from '../config.js';
 import { icon, toast, conferma, modal, condividiLink, scaricaFile, slug, comprimiImmagine, scegliFile } from '../ui.js';
 import { S, registra, modifica, render, vai, hashTorneo, cat, salvaOra } from './stato.js';
-import { editorRegole, swatches, sceltaEmoji, vuoto } from './comp.js';
+import { editorRegole, swatches, sceltaIcona, vuoto } from './comp.js';
 import { vistaCategoria } from './v-categoria.js';
 import { vistaSocieta } from './v-societa.js';
 import { vistaIscrizioni } from './v-iscrizioni.js';
+import { vistaPresenze } from './v-presenze.js';
 import { vistaPubblica } from './v-pubblica.js';
 import { esportaTorneo } from './importa.js';
 
@@ -23,10 +24,11 @@ export function vistaTorneo() {
     <div class="nav-label">Categorie</div>
     ${t.categorie.map(c => {
       const { tot, giocate } = contaPartite(c, S.risultati);
-      return voce(hashTorneo('c/' + c.id), `<i class="dot" style="background:${esc(c.colore)}"></i>`, esc(catNome(c)), r.sez === 'cat' && r.catId === c.id, tot ? `<small class="num">${giocate}/${tot}</small>` : '');
+      return voce(hashTorneo('c/' + c.id), `${catIcona(c)}`, esc(catNome(c)), r.sez === 'cat' && r.catId === c.id, tot ? `<small class="num">${giocate}/${tot}</small>` : '');
     }).join('')}
     <div class="nav-label">Organizzazione</div>
     ${voce(hashTorneo('societa'), icon('users'), 'Società', r.sez === 'societa', `<small class="num">${t.societa.length}</small>`)}
+    ${voce(hashTorneo('presenze'), icon('presenze'), 'Presenze', r.sez === 'presenze')}
     ${voce(hashTorneo('iscrizioni'), icon('form'), 'Iscrizioni', r.sez === 'iscrizioni', attesa ? `<b class="badge">${attesa}</b>` : '')}
     ${voce(hashTorneo('pubblica'), icon('live'), 'Pagina pubblica', r.sez === 'pubblica')}
     ${voce(hashTorneo('impostazioni'), icon('settings'), 'Impostazioni', r.sez === 'impostazioni')}`;
@@ -35,6 +37,7 @@ export function vistaTorneo() {
   if (r.sez === 'cat') contenuto = cat(r.catId) ? vistaCategoria(cat(r.catId)) : vuoto({ titolo: 'Categoria non trovata', azioni: `<a class="btn" href="${hashTorneo()}">Panoramica</a>` });
   else if (r.sez === 'societa') contenuto = vistaSocieta();
   else if (r.sez === 'iscrizioni') contenuto = vistaIscrizioni();
+  else if (r.sez === 'presenze') contenuto = vistaPresenze();
   else if (r.sez === 'pubblica') contenuto = vistaPubblica();
   else if (r.sez === 'impostazioni') contenuto = vistaImpostazioni();
   else contenuto = vistaPanoramica();
@@ -61,7 +64,7 @@ function vistaPanoramica() {
   // Prossimi passi: una sequenza reale, quindi numerata
   const passi = [
     { fatto: t.societa.length > 0, titolo: 'Aggiungi le società', testo: 'Inseriscile a mano o apri le iscrizioni online e approva le richieste.', azione: `<a class="btn btn-sm" href="${hashTorneo('societa')}">Società</a><a class="btn btn-sm btn-ghost" href="${hashTorneo('iscrizioni')}">Iscrizioni online</a>` },
-    { fatto: conGironi === t.categorie.length && t.categorie.length > 0, titolo: 'Crea i gironi', testo: conGironi ? `Fatto per ${conGironi} categorie su ${t.categorie.length}.` : 'VolleyHub distribuisce le squadre separando quelle della stessa società.', azione: t.categorie.filter(c => !c.fasi.length).slice(0, 3).map(c => `<a class="btn btn-sm" href="${hashTorneo('c/' + c.id)}"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(catNome(c))}</a>`).join('') },
+    { fatto: conGironi === t.categorie.length && t.categorie.length > 0, titolo: 'Crea i gironi', testo: conGironi ? `Fatto per ${conGironi} categorie su ${t.categorie.length}.` : 'VolleyHub distribuisce le squadre separando quelle della stessa società.', azione: t.categorie.filter(c => !c.fasi.length).slice(0, 3).map(c => `<a class="btn btn-sm" href="${hashTorneo('c/' + c.id)}">${catIcona(c)}${esc(catNome(c))}</a>`).join('') },
     { fatto: !!t.live.info.blocchi.length || t.live.sponsor.gruppi.length > 0 || t.live.menu.sezioni.length > 0, titolo: 'Prepara la pagina pubblica', testo: 'Classifiche e risultati compaiono da soli. Aggiungi orari, menu e sponsor se ti servono.', azione: `<a class="btn btn-sm" href="${hashTorneo('pubblica')}">Pagina pubblica</a>` },
   ];
   const daFare = passi.some(p => !p.fatto);
@@ -89,7 +92,7 @@ function vistaPanoramica() {
     ${inCorso.length ? `<section class="panel"><div class="panel-head"><h2>In campo ora</h2><span class="chip chip-live">${inCorso.length} in corso</span></div>
       <ul class="now-list">${inCorso.map(p => {
         const sets = (p.risultato.set || []).map(s => Array.isArray(s) ? s : [s.h, s.a]).filter(([h, a]) => h !== '' || a !== '');
-        return `<li><i class="dot" style="background:${esc(p.cat.colore)}"></i><div class="now-teams"><strong>${esc(p.h?.nome || p.hLabel)}</strong><span class="muted small">contro</span><strong>${esc(p.a?.nome || p.aLabel)}</strong></div>
+        return `<li>${catIcona(p.cat)}<div class="now-teams"><strong>${esc(p.h?.nome || p.hLabel)}</strong><span class="muted small">contro</span><strong>${esc(p.a?.nome || p.aLabel)}</strong></div>
           <span class="muted small">${esc(catNome(p.cat))}, ${esc(p.etichetta)}${p.campo ? `, ${esc(p.campo)}` : ''}</span>
           <span class="num now-score">${sets.map(([h, a]) => `${h || 0}–${a || 0}`).join('  ') || '0–0'}</span></li>`;
       }).join('')}</ul></section>` : ''}
@@ -99,7 +102,7 @@ function vistaPanoramica() {
         const { tot, giocate: g } = contaPartite(c, S.risultati);
         const reg = regoleDi(t, c);
         return `<li><a href="${hashTorneo('c/' + c.id)}">
-          <i class="dot dot-lg" style="background:${esc(c.colore)}"></i>
+          ${catIcona(c, 'lg')}
           <div class="co-main"><strong>${esc(catNome(c))}</strong><span class="muted small">${plurale(squadreTotali(t, c.id), 'squadra', 'squadre')}, ${c.fasi.length ? plurale(c.fasi.length, 'fase', 'fasi') : 'gironi da creare'}${reg.personalizzate ? ', regole proprie' : ''}</span></div>
           <div class="co-prog">${tot ? `<span class="num small">${g}/${tot}</span><div class="progress"><i style="width:${Math.round(g / tot * 100)}%;background:${esc(c.colore)}"></i></div>` : ''}</div>
           ${icon('right')}</a></li>`;
@@ -138,7 +141,7 @@ function vistaImpostazioni() {
     <section class="panel"><div class="panel-head"><h2>Categorie</h2><button class="btn btn-sm" data-a="aggiungiCategoria">${icon('plus')}Aggiungi</button></div>
       <ul class="cat-edit cat-edit-list">${t.categorie.map((c, i) => {
         const reg = regoleDi(t, c);
-        return `<li><i class="dot dot-lg" style="background:${esc(c.colore)}"></i>
+        return `<li>${catIcona(c, 'lg')}
           <div style="flex:1;min-width:0"><strong>${esc(catNome(c))}</strong><div class="muted small">${reg.personalizzate ? `Regole proprie: ${esc(descriviPunti(reg.punti))}, ${plurale(reg.set, 'set', 'set')}` : 'Regole del torneo'}</div></div>
           <button class="btn btn-ghost btn-icon btn-sm" data-a="spostaCat" data-id="${c.id}" data-d="-1" aria-label="Sposta su" ${i === 0 ? 'disabled' : ''}>${icon('up')}</button>
           <button class="btn btn-ghost btn-icon btn-sm" data-a="spostaCat" data-id="${c.id}" data-d="1" aria-label="Sposta giù" ${i === t.categorie.length - 1 ? 'disabled' : ''}>${icon('down')}</button>
@@ -164,16 +167,17 @@ function vistaImpostazioni() {
 // Finestra di modifica categoria (nome, colore, campi, regole proprie)
 async function finestraCategoria(c) {
   const nuova = !c;
-  const bozza = c ? { nome: c.nome, colore: c.colore, emoji: c.emoji || '' } : { nome: '', emoji: '', colore: (COLORI.find(x => !S.torneo.categorie.some(k => k.colore === x.hex)) || COLORI[0]).hex };
+  const bozza = c ? { nome: c.nome, colore: c.colore, icona: c.icona || '' } : { nome: '', icona: '', colore: (COLORI.find(x => !S.torneo.categorie.some(k => k.colore === x.hex)) || COLORI[0]).hex };
   const proprie = !!c?.regole;
   const ris = await modal({
     title: nuova ? 'Nuova categoria' : `Modifica ${catNome(c)}`,
-    body: `<div class="field"><span>Nome</span><div class="row" style="gap:8px">${sceltaEmoji(bozza.emoji, 'id="mc-emoji"')}<input class="input" id="mc-nome" value="${esc(bozza.nome)}" maxlength="40" aria-label="Nome" autofocus></div></div>
+    body: `<label class="field"><span>Nome</span><input class="input" id="mc-nome" value="${esc(bozza.nome)}" maxlength="40" autofocus></label>
       <div class="field"><span>Colore</span>${swatches(bozza.colore, 'data-pick')}</div>
+      <div class="field"><span>Simbolo</span>${sceltaIcona(bozza.colore, bozza.icona, 'data-ipick')}</div>
       ${nuova ? '' : `<label class="switch"><input type="checkbox" id="mc-regole" ${proprie ? 'checked' : ''}><span class="track"></span><span>Usa regole di punteggio diverse da quelle del torneo</span></label>
       <p class="hint">Le regole proprie si modificano dalla pagina della categoria.</p>`}
       ${nuova ? '' : `<div class="danger-zone"><div><strong>Elimina categoria</strong><p class="muted small">Cancella anche i suoi gironi e risultati.</p></div><button type="button" class="btn btn-danger btn-sm" id="mc-del">${icon('trash')}Elimina</button></div>`}`,
-    azioni: [{ label: 'Annulla', value: null }, { label: nuova ? 'Aggiungi' : 'Salva', cls: 'btn-primary', value: box => ({ nome: box.querySelector('#mc-nome').value.trim(), emoji: box.querySelector('#mc-emoji').value, colore: box.dataset.colore || bozza.colore, regole: box.querySelector('#mc-regole')?.checked }) }],
+    azioni: [{ label: 'Annulla', value: null }, { label: nuova ? 'Aggiungi' : 'Salva', cls: 'btn-primary', value: box => ({ nome: box.querySelector('#mc-nome').value.trim(), icona: box.dataset.icona ?? bozza.icona, colore: box.dataset.colore || bozza.colore, regole: box.querySelector('#mc-regole')?.checked }) }],
     validate: box => {
       const v = box.querySelector('#mc-nome').value.trim();
       if (!v) { toast('Inserisci un nome.', 'err'); return 'x'; }
@@ -185,6 +189,12 @@ async function finestraCategoria(c) {
       box.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => {
         box.dataset.colore = b.dataset.colore;
         box.querySelectorAll('[data-pick]').forEach(x => x.setAttribute('aria-pressed', x === b));
+        box.querySelector('.ic-picks').style.setProperty('--c', b.dataset.colore);
+      }));
+      box.dataset.icona = bozza.icona;
+      box.querySelectorAll('[data-ipick]').forEach(b => b.addEventListener('click', () => {
+        box.dataset.icona = b.dataset.icona;
+        box.querySelectorAll('[data-ipick]').forEach(x => x.setAttribute('aria-pressed', x === b));
       }));
       box.querySelector('#mc-del')?.addEventListener('click', () => close('elimina'));
     },
@@ -192,9 +202,9 @@ async function finestraCategoria(c) {
   if (!ris) return;
   if (ris === 'elimina') { eliminaCategoria(c); return; }
   modifica(t => {
-    if (nuova) t.categorie.push({ id: uid(), nome: ris.nome, colore: ris.colore, emoji: ris.emoji, campi: 0, regole: null, fasi: [] });
+    if (nuova) t.categorie.push({ id: uid(), nome: ris.nome, colore: ris.colore, icona: ris.icona, campi: 0, regole: null, fasi: [] });
     else {
-      c.nome = ris.nome; c.colore = ris.colore; c.emoji = ris.emoji;
+      c.nome = ris.nome; c.colore = ris.colore; c.icona = ris.icona;
       if (ris.regole && !c.regole) c.regole = { punti: { ...t.regole.punti }, set: t.regole.set, timer: t.regole.timer };
       if (!ris.regole) c.regole = null;
     }

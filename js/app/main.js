@@ -7,7 +7,7 @@ import { S, azioni, registra, setRender, inSalvataggio, aggiornaIndicatore, salv
 import { vistaHome } from './v-home.js';
 import { vistaNuovo, initNuovo } from './v-nuovo.js';
 import { vistaTorneo } from './v-torneo.js';
-import { tourSeServe, avviaTour, riavviaGuide } from './tour.js';
+import { tourSeServe, avviaTour, riavviaGuide, chiudiTour } from './tour.js';
 
 const $ = s => document.querySelector(s);
 let unsub = [];
@@ -68,6 +68,7 @@ function instrada() {
     chiudiTorneo();
     S.route = { vista: 'home' };
   }
+  if (prima.vista !== S.route.vista || prima.sez !== S.route.sez || prima.catId !== S.route.catId) chiudiTour();
   disegna();
   if (prima.vista !== S.route.vista || prima.sez !== S.route.sez || prima.catId !== S.route.catId) {
     window.scrollTo(0, 0);
@@ -139,7 +140,7 @@ function disegna() {
     if (el) { el.focus({ preventScroll: true }); if (sel) try { el.setSelectionRange(...sel); } catch { /* tipo non testuale */ } }
   }
   window.scrollTo(0, sy);
-  tourSeServe(guidaDellaPagina());
+  tourSeServe(guidaDellaPagina(), guidaDellaPagina);
 }
 
 // Quale guida mostrare nella pagina corrente

@@ -270,3 +270,11 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Contrassegno categoria */
+.cat-ic { --s: 18px; width: var(--s); height: var(--s); border-radius: calc(var(--s) * .3); background: var(--c, #5B6680); color: #fff; display: inline-grid; place-items: center; flex-shrink: 0; vertical-align: -3px; }
+/* Il contrassegno non si deforma dentro voci di menu, chip e tabelle */
+.cat-ic { flex: none !important; min-width: var(--s); max-width: var(--s); }
+.cat-ic > svg { width: 72% !important; height: 72% !important; color: #fff !important; margin: 0 !important; }
+.cat-ic-lg { --s: 26px; }
+.cat-ic-xl { --s: 38px; }

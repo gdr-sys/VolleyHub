@@ -2,7 +2,7 @@
 import { getStore } from './store.js';
 import { link, DEMO } from './config.js';
 import {
-  catNome,
+  catNome, catIcona,
   esc, normalizzaTorneo, regoleDi, classifica, risolviTabellone, squadraDi, esito, isFinita, isInCorso, setDa,
   elencoPartite, formatData, formatOra, normalizzaPrezzo, safeImg, plurale, descriviPunti,
 } from './core.js';
@@ -54,7 +54,7 @@ function disegna() {
   const sy = window.scrollY;
   const t = L.t;
   const sezioni = [
-    ...t.categorie.filter(c => c.fasi.length).map(c => ({ k: c.id, label: catNome(c), colore: c.colore })),
+    ...t.categorie.filter(c => c.fasi.length).map(c => ({ k: c.id, label: catNome(c), colore: c.colore, cat: c })),
     ...(FAV.size ? [{ k: 'mie', label: 'Le mie squadre', ic: 'star' }] : []),
     ...(t.live.info.attivo && t.live.info.blocchi.length ? [{ k: 'info', label: 'Info', ic: 'info' }] : []),
     ...(t.live.menu.attivo && t.live.menu.sezioni.length ? [{ k: 'menu', label: 'Menu', ic: 'utensils' }] : []),
@@ -64,6 +64,7 @@ function disegna() {
   if (!L.sez || !sezioni.some(s => s.k === L.sez)) L.sez = sezioni.some(s => s.k === daHash) ? daHash : sezioni[0]?.k || null;
   const partite = elencoPartite(t, L.ris);
   const inCampo = partite.filter(p => isInCorso(p.risultato));
+  const mieProssime = prossimeSeguite(partite);
 
   let corpo;
   const cat = t.categorie.find(c => c.id === L.sez);
@@ -90,7 +91,10 @@ function disegna() {
       <span class="lv-now-label"><i></i>In campo ora</span>
       ${inCampo.map(p => cardInCampo(p)).join('')}
     </div></section>` : ''}
-    ${sezioni.length ? `<nav class="lv-tabs" aria-label="Sezioni"><div class="lv-tabs-in">${sezioni.map(s => `<button data-a="sez" data-k="${esc(s.k)}" aria-current="${L.sez === s.k ? 'page' : 'false'}" style="${s.colore ? `--c:${esc(s.colore)}` : ''}">${s.colore ? `<i class="dot" style="background:${esc(s.colore)}"></i>` : icon(s.ic)}${esc(s.label)}</button>`).join('')}</div></nav>` : ''}
+    ${mieProssime.length ? `<section class="lv-next" aria-label="Le prossime partite delle squadre che segui"><div class="lv-next-in">
+      ${mieProssime.map(cardProssima).join('')}
+    </div></section>` : ''}
+    ${sezioni.length ? `<nav class="lv-tabs" aria-label="Sezioni"><div class="lv-tabs-in">${sezioni.map(s => `<button data-a="sez" data-k="${esc(s.k)}" aria-current="${L.sez === s.k ? 'page' : 'false'}" style="${s.colore ? `--c:${esc(s.colore)}` : ''}">${s.cat ? catIcona(s.cat) : icon(s.ic)}${esc(s.label)}</button>`).join('')}</div></nav>` : ''}
     <main class="lv-main">${corpo}</main>
     <footer class="footer">Risultati in tempo reale con <a href="${esc(link('index.html'))}">VolleyHub</a>. Progetto e idea di <a href="mailto:noemi.marcolini@gmail.com">Noemi Marcolini</a>.</footer>`;
 
@@ -107,6 +111,44 @@ function cardInCampo(p) {
     <span class="lv-now-teams"><b>${esc(p.h?.nome || p.hLabel)}</b><b>${esc(p.a?.nome || p.aLabel)}</b></span>
     <span class="lv-now-score num">${punteggioLive(p.risultato)}</span>
   </div>`;
+}
+
+// ── La tua prossima partita ───────────────────────────────
+// Per ogni squadra seguita: la partita in corso o la prossima, con quante partite mancano prima
+function prossimaDi(catId, nome, partite) {
+  const sue = partite.filter(p => p.cat.id === catId && p.pronta && (p.h?.nome === nome || p.a?.nome === nome));
+  const p = sue.find(x => isInCorso(x.risultato)) || sue.find(x => !isFinita(x.risultato));
+  if (!p) return null;
+  // Partite ancora da giocare prima di questa: nello stesso girone, o nella stessa fase per il tabellone
+  const coda = partite.filter(x => (p.girone ? x.girone === p.girone : x.fase === p.fase));
+  const prima = coda.slice(0, coda.indexOf(p)).filter(x => !isFinita(x.risultato) && x.pronta);
+  return { p, nome, attesa: isInCorso(p.risultato) ? -1 : prima.length, inCorsoPrima: prima.some(x => isInCorso(x.risultato)) };
+}
+function prossimeSeguite(partite) {
+  const out = [];
+  for (const key of FAV) {
+    const i = key.indexOf('|');
+    const x = prossimaDi(key.slice(0, i), key.slice(i + 1), partite);
+    if (x) out.push(x);
+  }
+  return out.sort((a, b) => a.attesa - b.attesa);
+}
+function statoAttesa({ attesa, inCorsoPrima }) {
+  if (attesa < 0) return { cls: 'live', testo: 'In campo ora' };
+  if (attesa === 0) return { cls: 'subito', testo: 'Tocca a voi' };
+  if (attesa === 1) return { cls: '', testo: inCorsoPrima ? 'Dopo la partita in corso' : 'Tra 1 partita' };
+  return { cls: '', testo: `Tra ${attesa} partite` };
+}
+function cardProssima(x) {
+  const { p, nome } = x;
+  const avv = p.h?.nome === nome ? (p.a?.nome || p.aLabel) : (p.h?.nome || p.hLabel);
+  const st = statoAttesa(x);
+  return `<button class="lv-next-card" style="--c:${esc(p.cat.colore)}" data-a="sez" data-k="mie">
+    <span class="lv-next-top">${icon('star')}<span>La tua prossima partita</span></span>
+    <span class="lv-next-teams"><b>${esc(nome)}</b><span>contro ${esc(avv)}</span></span>
+    <span class="lv-next-meta">${catIcona(p.cat)}${esc(catNome(p.cat))}, ${esc(p.etichetta)}${p.campo ? `, ${esc(p.campo)}` : ''}</span>
+    <span class="lv-next-st ${st.cls}">${st.cls === 'live' ? '<i></i>' : ''}${st.testo}${st.cls === 'live' ? ` <span class="num">${punteggioLive(p.risultato)}</span>` : ''}</span>
+  </button>`;
 }
 
 // ── Categoria ─────────────────────────────────────────────
@@ -205,13 +247,14 @@ function vistaMie() {
       const r = classifica(g, L.ris, reg.punti).find(x => x.nome === nome);
       if (r) { pos = r; girone = `${f.nome}, girone ${g.nome}`; socId = r.socId; }
     }
-    const prossima = partite.find(p => !isFinita(p.risultato) && p.pronta);
+    const px = prossimaDi(catId, nome, elencoPartite(t, L.ris));
+    const prossima = px?.p;
     const giocate = partite.filter(p => isFinita(p.risultato)).reverse();
     out.push(`<section class="lv-card mie" style="--c:${esc(c.colore)}">
       <header>${logoHtml(logoSoc(socId), nomeSoc(socId) || nome, true)}<div style="flex:1;min-width:0"><h2>${esc(nome)}</h2><span class="muted small">${esc(catNome(c))}${socId ? `, ${esc(nomeSoc(socId))}` : ''}</span></div>${stella(catId, nome)}</header>
       <div class="mie-body">
         ${pos ? `<div class="mie-pos"><b class="num">${pos.pos}°</b><span>${esc(girone)}<br><strong class="num">${pos.pt}</strong> punti in ${plurale(pos.g, 'partita', 'partite')}</span></div>` : ''}
-        ${prossima ? `<div class="mie-next"><span class="label">${isInCorso(prossima.risultato) ? 'In campo ora' : 'Prossima partita'}</span><strong>${esc(prossima.h?.nome)} – ${esc(prossima.a?.nome)}</strong><span class="muted small">${esc(prossima.etichetta)}${prossima.campo ? `, ${esc(prossima.campo)}` : ''}</span>${isInCorso(prossima.risultato) ? `<span class="num mie-score">${punteggioLive(prossima.risultato)}</span>` : ''}</div>` : ''}
+        ${prossima ? `<div class="mie-next"><span class="label">${isInCorso(prossima.risultato) ? 'In campo ora' : 'Prossima partita'}</span><strong>${esc(prossima.h?.nome)} – ${esc(prossima.a?.nome)}</strong><span class="muted small">${esc(prossima.etichetta)}${prossima.campo ? `, ${esc(prossima.campo)}` : ''}${px.attesa >= 0 ? `. ${esc(statoAttesa(px).testo)}` : ''}</span>${isInCorso(prossima.risultato) ? `<span class="num mie-score">${punteggioLive(prossima.risultato)}</span>` : ''}</div>` : ''}
         ${giocate.length ? `<ul class="mie-res">${giocate.map(p => { const e = esito(p.risultato); const vinto = (e.vincitore === 'h') === (p.h?.nome === nome); return `<li><span class="mie-wl ${e.vincitore ? (vinto ? 'w' : 'l') : 'd'}">${e.vincitore ? (vinto ? 'V' : 'P') : 'N'}</span><span>${esc(p.h?.nome === nome ? p.a?.nome : p.h?.nome)}</span><span class="num">${e.sets.map(([x, y]) => p.h?.nome === nome ? `${x}–${y}` : `${y}–${x}`).join('  ')}</span></li>`; }).join('')}</ul>` : ''}
       </div></section>`);
   }

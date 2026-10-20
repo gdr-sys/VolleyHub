@@ -1,6 +1,6 @@
 // Segnapunti a bordo campo: punto per punto o risultato finale, per una sola partita
 import { getStore } from './store.js';
-import { esc, catNome, normalizzaTorneo, trovaPartita, risolviTabellone, squadraDi, regoleDi, setDa, setPerDb, validaSet, esito, isFinita, plurale } from './core.js';
+import { esc, catIcona, catNome, normalizzaTorneo, trovaPartita, risolviTabellone, squadraDi, regoleDi, setDa, setPerDb, validaSet, esito, isFinita, plurale } from './core.js';
 import { icon, toast, modal, applicaTema } from './ui.js';
 
 applicaTema();
@@ -75,7 +75,7 @@ function disegna() {
   const sets = setCorrenti(p);
   const nomi = [p.h.nome, p.a.nome];
   const testa = `<header class="sg-head" style="--c:${esc(p.cat.colore)}">
-      <div><span class="sg-cat"><i class="dot" style="background:${esc(p.cat.colore)}"></i>${esc(catNome(p.cat))}</span>
+      <div><span class="sg-cat">${catIcona(p.cat)}${esc(catNome(p.cat))}</span>
       <p>${esc(P.t.nome)}, ${esc(p.etichetta)}${p.campo ? `, ${esc(p.campo)}` : ''}</p></div>
       ${!P.fatto && !isFinita(r) ? `<div class="segmented sg-mode" role="tablist">
         <button role="tab" aria-selected="${P.modo === 'live'}" data-a="modo" data-k="live">Punto per punto</button>

@@ -13,9 +13,9 @@ export function creaTorneoDemo(owner) {
   const t = nuovoTorneo({
     nome: 'Torneo di Primavera', data: oggi, luogo: 'Palazzetto dello Sport', owner,
     categorie: [
-      { nome: 'White', colore: '#1E40AF', emoji: '⬜', campi: 3 },
-      { nome: 'Green', colore: '#166534', emoji: '🟩', campi: 2 },
-      { nome: 'Red', colore: '#991B1B', emoji: '🟥', campi: 2 },
+      { nome: 'White', colore: '#1E40AF', icona: '', campi: 3 },
+      { nome: 'Green', colore: '#166534', icona: '', campi: 2 },
+      { nome: 'Red', colore: '#991B1B', icona: '', campi: 2 },
     ],
     regole: { set: 2 },
   });
