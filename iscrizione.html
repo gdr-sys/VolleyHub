@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Iscrizione al torneo · VolleyHub</title>
+  <meta name="theme-color" content="#13213F">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap">
+  <link rel="stylesheet" href="css/vh.css">
+  <style>
+    .is-head { background: #13213F; color: #fff; padding: 28px 16px 32px; }
+    .is-head > div { max-width: 680px; margin: 0 auto; display: grid; gap: 6px; }
+    .is-head .brand-mini { display: inline-flex; align-items: center; gap: 8px; color: #B9C4DD; font-size: 13px; font-weight: 600; }
+    .is-head h1 { color: #fff; font-size: clamp(24px, 6vw, 34px); }
+    .is-head p { color: #B9C4DD; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+    .is-head .deadline { color: #FFC93C; font-weight: 700; }
+    .is-main { max-width: 680px; margin: -16px auto 0; padding: 0 12px 40px; display: grid; gap: 16px; }
+    .is-main .panel-body { display: grid; gap: 14px; }
+    .is-cat { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .is-cat:last-child { border-bottom: 0; }
+    .is-cat small { grid-column: 1; color: var(--muted); font-size: 13px; }
+    .is-cat .lbl { font-size: 11.5px; color: var(--muted); text-align: center; font-weight: 600; }
+    .is-cat .cell { display: grid; gap: 3px; justify-items: center; grid-row: 1 / span 2; }
+    .is-cat .c-sq { grid-column: 2; }
+    .is-cat .c-at { grid-column: 3; }
+    .is-cat .input-num { width: 76px; }
+    @media (max-width: 480px) { .is-cat { grid-template-columns: 1fr 1fr; } .is-cat .cell { grid-row: auto; grid-column: auto !important; justify-items: start; } .is-cat > div:first-child, .is-cat small { grid-column: 1 / -1; } }
+    .logo-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .check { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 12px; border: 1.5px solid var(--line-strong); cursor: pointer; }
+    .check input { width: 22px; height: 22px; margin: 1px 0 0; flex-shrink: 0; accent-color: #12805C; }
+    .err-text { color: var(--red); font-size: 13px; font-weight: 600; }
+    .input[aria-invalid="true"] { border-color: var(--red); }
+    .pre { white-space: pre-line; }
+    .ok-box { text-align: center; padding: 40px 20px; display: grid; gap: 12px; justify-items: center; }
+    .ok-box .ic { width: 72px; height: 72px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; }
+    .ok-box .ic svg { width: 38px; height: 38px; }
+  </style>
+</head>
+<body>
+  <div id="app"><div class="loading-screen"><div class="spinner"></div><p>Carico il modulo…</p></div></div>
+  <script type="module" src="js/iscrizione.js"></script>
+</body>
+</html>

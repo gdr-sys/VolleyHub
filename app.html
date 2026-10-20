@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>VolleyHub</title>
+  <meta name="description" content="Gestisci il tuo torneo di pallavolo: gironi, risultati, classifiche e pagina live.">
+  <meta name="theme-color" content="#13213F">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap">
+  <link rel="stylesheet" href="css/vh.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script>try{var t=localStorage.getItem('vh_theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+  <a class="skip" href="#root">Vai al contenuto</a>
+  <header class="topbar">
+    <a class="brand" href="#/" aria-label="VolleyHub, i tuoi tornei"><img src="assets/logo-mark.svg" alt="" width="30" height="30"><span>VolleyHub</span></a>
+    <nav class="crumbs" id="crumbs" aria-label="Percorso"></nav>
+    <span class="spacer"></span>
+    <div class="sync" id="sync" data-stato="ok" hidden role="status" aria-live="polite"><i aria-hidden="true"></i><span>Salvato</span></div>
+    <button class="btn btn-ghost btn-icon" id="tema-btn" data-a="tema" aria-label="Cambia tema chiaro o scuro"></button>
+    <details class="menu account">
+      <summary class="btn btn-ghost btn-icon" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></summary>
+      <div class="menu-list menu-right">
+        <span class="menu-note" id="account-mail"></span>
+        <a href="index.html">Pagina di presentazione</a>
+        <button data-a="esci">Esci</button>
+      </div>
+    </details>
+  </header>
+  <div class="demo-banner" id="demo-banner" hidden></div>
+  <main id="root" tabindex="-1"><div class="loading-screen"><div class="spinner"></div></div></main>
+  <noscript><p style="padding:24px">VolleyHub ha bisogno di JavaScript attivo.</p></noscript>
+  <script type="module" src="js/app/main.js"></script>
+</body>
+</html>

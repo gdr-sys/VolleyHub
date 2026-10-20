@@ -1,0 +1,56 @@
+/* VolleyHub — segnapunti a bordo campo */
+body { min-height: 100dvh; }
+.sg-head { background: #13213F; color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 4px solid var(--c); }
+.sg-head > div:first-child { flex: 1; min-width: 200px; }
+.sg-cat { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 18px; }
+.sg-head p { color: #B9C4DD; font-size: 13.5px; margin-top: 2px; }
+.sg-mode { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); }
+.sg-mode button { color: #B9C4DD; }
+.sg-mode button[aria-selected="true"] { background: #fff; color: #13213F; }
+
+.sg-live, .sg-main, .sg-done { max-width: 720px; margin: 0 auto; padding: 14px 14px 24px; display: grid; gap: 14px; }
+.sg-sets { display: flex; gap: 6px; overflow-x: auto; }
+.sg-sets button { flex: 1; min-width: 90px; display: grid; justify-items: center; gap: 0; padding: 8px 10px; border-radius: 11px; border: 1.5px solid var(--line-strong); background: var(--surface); font-weight: 700; cursor: pointer; color: var(--ink-2); }
+.sg-sets button .num { font-size: 17px; color: var(--muted); min-height: 1.2em; }
+.sg-sets button[aria-selected="true"] { border-color: var(--ink); background: var(--ink); color: var(--on-ink); }
+.sg-sets button[aria-selected="true"] .num { color: var(--yellow); }
+
+.sg-timer { display: flex; align-items: center; gap: 10px; justify-content: center; padding: 8px 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.sg-timer .num { font-size: 40px; font-weight: 700; line-height: 1; min-width: 3.2ch; text-align: center; }
+.sg-timer.warn .num { color: #C98A00; }
+.sg-timer.over { border-color: var(--red); background: var(--red-soft); }
+.sg-timer.over .num { color: var(--red); animation: pulse 1s infinite; }
+
+.sg-board { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sg-team { display: grid; gap: 10px; justify-items: stretch; text-align: center; padding: 14px 10px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.sg-team h2 { font-size: clamp(16px, 4.5vw, 22px); line-height: 1.2; min-height: 2.4em; display: grid; place-items: center; overflow-wrap: anywhere; }
+.sg-won { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: -6px; }
+.sg-plus { display: grid; justify-items: center; gap: 4px; padding: 10px 6px 14px; border-radius: 14px; border: 0; cursor: pointer; color: #fff; touch-action: manipulation; user-select: none; -webkit-user-select: none; transition: transform .06s; }
+.t0 .sg-plus { background: #2A5BD7; }
+.t1 .sg-plus { background: #C8283C; }
+.sg-plus:active { transform: scale(.97); }
+.sg-plus .num { font-size: clamp(72px, 24vw, 132px); font-weight: 700; line-height: .95; }
+.sg-plus small { font-size: 17px; font-weight: 800; background: rgba(255,255,255,.2); padding: 3px 14px; border-radius: 99px; }
+.sg-minus { min-height: 48px; border-radius: 12px; border: 1.5px solid var(--line-strong); background: var(--surface-2); font-size: 20px; font-weight: 800; color: var(--ink-2); cursor: pointer; touch-action: manipulation; }
+.sg-bar { display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
+.sg-save { font-size: 13px; font-weight: 600; color: var(--green); display: inline-flex; align-items: center; gap: 6px; }
+.sg-save::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.sg-save[data-stato="attesa"] { color: #C98A00; }
+.sg-save[data-stato="errore"] { color: var(--red); }
+
+.sg-form { display: grid; grid-template-columns: minmax(0, 1fr) repeat(var(--n), 64px); gap: 8px; align-items: center; padding: 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.sg-sh { text-align: center; font-size: 13px; color: var(--muted); }
+.sg-fn { font-size: 17px; overflow-wrap: anywhere; }
+.sg-form .sc { width: 64px; height: 60px; font-size: 32px; }
+
+.sg-done { text-align: center; justify-items: center; padding-top: 36px; }
+.sg-done-ic { width: 72px; height: 72px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; }
+.sg-done-ic svg { width: 38px; height: 38px; }
+.sg-final { display: grid; gap: 6px; width: 100%; max-width: 420px; }
+.sg-final > div { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); text-align: left; }
+.sg-final strong { flex: 1; }
+.sg-final b { font-size: 26px; min-width: 32px; text-align: center; color: var(--muted); }
+.sg-final .win { border-color: var(--green); background: var(--green-soft); }
+.sg-final .win b { color: var(--ink); }
+.sg-msg { min-height: 80vh; display: grid; place-items: center; align-content: center; gap: 12px; text-align: center; padding: 24px; }
+.sg-msg p { color: var(--muted); max-width: 42ch; }

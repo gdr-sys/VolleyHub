@@ -1,0 +1,99 @@
+rules_version = '2';
+
+// Regole Firestore per VolleyHub.
+// Se nello stesso progetto Firebase usi ancora la vecchia app, copia SOLO il blocco
+// "VolleyHub" dentro il tuo `match /databases/{database}/documents { ... }` esistente,
+// lasciando invariate le regole della vecchia app.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Profilo account: lo legge solo il proprietario (serve per verificare che sia attivo)
+    match /utenti/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ───────────────────────── VolleyHub ─────────────────────────
+    function loggato() { return request.auth != null; }
+    function attivo() {
+      return loggato()
+        && get(/databases/$(database)/documents/utenti/$(request.auth.uid)).data.attivo == true;
+    }
+
+    match /vh_tornei/{tid} {
+      function torneo() { return get(/databases/$(database)/documents/vh_tornei/$(tid)).data; }
+      function proprietario() { return loggato() && torneo().owner == request.auth.uid; }
+      function arbitroDi(mid) {
+        return loggato()
+          && get(/databases/$(database)/documents/vh_tornei/$(tid)/arbitri/$(request.auth.uid)).data.matchId == mid;
+      }
+      function risultatoValido() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['set', 'stato', 'ts', 'squadre'])
+          && d.stato in ['in_corso', 'finita', 'sospesa']
+          && d.set is list && d.set.size() <= 5
+          && d.ts is number;
+      }
+
+      // Il torneo è pubblico in lettura (pagina live); lo modifica solo chi l'ha creato
+      allow get: if true;
+      allow list: if loggato() && resource.data.owner == request.auth.uid;
+      allow create: if attivo() && request.resource.data.owner == request.auth.uid;
+      allow update: if loggato() && resource.data.owner == request.auth.uid
+        && request.resource.data.owner == request.auth.uid;
+      allow delete: if loggato() && resource.data.owner == request.auth.uid;
+
+      // Risultati: li scrive l'organizzatore oppure il segnapunti della singola partita
+      match /risultati/{mid} {
+        allow read: if true;
+        allow create, update: if proprietario() || (arbitroDi(mid) && risultatoValido());
+        allow delete: if proprietario();
+      }
+
+      // Loghi e immagini sponsor
+      match /media/{mediaId} {
+        allow read: if true;
+        allow write: if proprietario() && request.resource.data.data is string
+          && request.resource.data.data.size() < 600000;
+        allow delete: if proprietario();
+      }
+
+      // Contatti dei referenti e token dei segnapunti: solo l'organizzatore
+      match /privato/{doc} {
+        allow read, write: if proprietario();
+      }
+      match /segnapunti/{token} {
+        allow read, write: if proprietario();
+      }
+
+      // Un dispositivo (accesso anonimo) diventa segnapunti presentando il token corretto
+      match /arbitri/{uid} {
+        allow read: if proprietario() || (loggato() && request.auth.uid == uid);
+        allow create, update: if loggato() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['token', 'matchId', 'ts'])
+          && request.resource.data.token is string
+          && request.resource.data.token.size() >= 20
+          && get(/databases/$(database)/documents/vh_tornei/$(tid)/segnapunti/$(request.resource.data.token)).data.matchId
+             == request.resource.data.matchId;
+        allow delete: if proprietario();
+      }
+
+      // Iscrizioni online: chiunque può inviarne una mentre il modulo è aperto
+      match /iscrizioni/{iid} {
+        allow create: if torneo().iscrizioni.aperte == true
+          && torneo().archiviato != true
+          && request.resource.data.keys().hasOnly(['nomeSoc', 'referente', 'tel', 'email', 'note', 'logo', 'squadre', 'atleti', 'accetta', 'stato', 'inviatoAt'])
+          && request.resource.data.stato == 'attesa'
+          && request.resource.data.accetta == true
+          && request.resource.data.nomeSoc is string && request.resource.data.nomeSoc.size() > 0 && request.resource.data.nomeSoc.size() <= 60
+          && request.resource.data.referente is string && request.resource.data.referente.size() <= 60
+          && request.resource.data.email is string && request.resource.data.email.size() <= 80
+          && request.resource.data.tel is string && request.resource.data.tel.size() <= 30
+          && request.resource.data.note is string && request.resource.data.note.size() <= 500
+          && request.resource.data.logo is string && request.resource.data.logo.size() < 200000
+          && request.resource.data.squadre is map && request.resource.data.atleti is map;
+        allow read, update, delete: if proprietario();
+      }
+    }
+  }
+}

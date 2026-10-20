@@ -1,0 +1,16 @@
+{
+  "name": "VolleyHub",
+  "short_name": "VolleyHub",
+  "description": "Gestione tornei di pallavolo: gironi, risultati e classifiche live.",
+  "lang": "it",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#13213F",
+  "theme_color": "#13213F",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

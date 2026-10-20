@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>VolleyHub · Gestione tornei di pallavolo</title>
+  <meta name="description" content="Organizza il tuo torneo di pallavolo: iscrizioni online, gironi automatici, risultati da bordo campo e classifiche live per il pubblico.">
+  <meta name="theme-color" content="#13213F">
+  <meta property="og:title" content="VolleyHub">
+  <meta property="og:description" content="Il torneo di pallavolo, dal primo girone al podio.">
+  <meta property="og:image" content="assets/icon-512.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap">
+  <link rel="stylesheet" href="css/vh.css">
+  <style>
+    .nav { display: flex; align-items: center; gap: 12px; max-width: 1120px; margin: 0 auto; padding: 18px 20px; }
+    .nav .spacer { flex: 1; }
+    .hero { background: #13213F; color: #fff; overflow: hidden; }
+    .hero .nav .brand { color: #fff; }
+    .hero .nav .btn-ghost { color: #fff; }
+    .hero .nav .btn-ghost:hover { background: rgba(255,255,255,.1); }
+    .hero-in { max-width: 1120px; margin: 0 auto; padding: 40px 20px 72px; display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; }
+    .hero h1 { font-size: clamp(38px, 5.6vw, 66px); line-height: 1.02; letter-spacing: -.03em; color: #fff; }
+    .hero p.lead { font-size: 19px; color: #C3CCDD; margin: 20px 0 30px; max-width: 46ch; }
+    .hero .row-wrap { gap: 12px; }
+    .hero .btn:not(.btn-accent) { background: transparent; color: #fff; border-color: rgba(255,255,255,.35); }
+    .hero .btn:not(.btn-accent):hover { background: rgba(255,255,255,.08); }
+    /* Il tabellone in diretta: l'elemento che racconta il prodotto */
+    .board { background: #0C1424; border-radius: 22px; padding: 20px; box-shadow: 0 30px 80px rgba(0,0,0,.45); border: 1px solid #26355A; display: grid; gap: 14px; transform: rotate(-1.2deg); }
+    .board-top { display: flex; align-items: center; justify-content: space-between; color: #9AA6BF; font-size: 13px; font-weight: 600; }
+    .live-pill { display: inline-flex; align-items: center; gap: 6px; color: #FF8794; }
+    .live-pill i { width: 8px; height: 8px; border-radius: 50%; background: #FF5D6E; animation: pulse 1.4s infinite; }
+    .score { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; background: #142038; border-radius: 16px; padding: 18px; border-left: 5px solid #2A5BD7; }
+    .score b { font-size: 20px; }
+    .score b:last-child { text-align: right; }
+    .score .num { font-size: 58px; font-weight: 700; color: #FFC93C; line-height: .9; letter-spacing: .02em; }
+    .score .num i { font-style: normal; color: #4A5878; margin: 0 6px; }
+    .mini { width: 100%; border-collapse: collapse; font-size: 15px; }
+    .mini td { padding: 9px 6px; border-bottom: 1px solid #26355A; }
+    .mini td:last-child { text-align: right; font-family: var(--font-num); font-size: 22px; font-weight: 700; color: #FFC93C; }
+    .mini td small { color: #9AA6BF; display: block; font-size: 12px; }
+    .mini tr:last-child td { border: 0; }
+    .mini .p { width: 34px; }
+    .sect { max-width: 1120px; margin: 0 auto; padding: 80px 20px; }
+    .sect h2 { font-size: clamp(28px, 3.6vw, 40px); letter-spacing: -.02em; max-width: 22ch; }
+    .sect > p { color: var(--muted); font-size: 18px; margin-top: 12px; max-width: 58ch; }
+    .moments { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 44px; border-top: 2px solid var(--ink); }
+    .moments > div { padding: 22px 26px 8px 0; }
+    .moments > div + div { padding-left: 26px; border-left: 1px solid var(--line); }
+    .moments h3 { font-size: 22px; margin-bottom: 14px; }
+    .moments ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+    .moments li { color: var(--ink-2); line-height: 1.5; }
+    .moments li strong { color: var(--ink); }
+    .rules { background: var(--surface); border-block: 1px solid var(--line); }
+    .rules-in { max-width: 1120px; margin: 0 auto; padding: 72px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .rules h2 { font-size: clamp(26px, 3.2vw, 36px); letter-spacing: -.02em; }
+    .rules p { color: var(--muted); font-size: 17px; margin-top: 12px; }
+    .rule-list { display: grid; gap: 10px; }
+    .rule-list div { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--bg); font-weight: 650; }
+    .rule-list div.on { border-color: var(--blue); background: var(--blue-soft); }
+    .rule-list span { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .cta { text-align: center; display: grid; justify-items: center; gap: 18px; }
+    .cta h2 { max-width: none; }
+    @media (max-width: 900px) {
+      .hero-in, .rules-in { grid-template-columns: 1fr; }
+      .board { transform: none; }
+      .moments { grid-template-columns: 1fr; }
+      .moments > div, .moments > div + div { padding: 22px 0; border-left: 0; border-bottom: 1px solid var(--line); }
+    }
+    @media (max-width: 480px) { .score .num { font-size: 44px; } .hero .nav .btn-ghost { display: none; } }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <nav class="nav"><a class="brand" href="index.html"><img src="assets/logo-mark.svg" alt="" width="32" height="32">VolleyHub</a><span class="spacer"></span><a class="btn btn-ghost" href="app.html?demo=1">Demo</a><a class="btn btn-accent" href="accedi.html">Accedi</a></nav>
+    <div class="hero-in">
+      <div>
+        <h1>Il torneo di pallavolo, dal primo girone al podio.</h1>
+        <p class="lead">Iscrizioni online, gironi creati in automatico, punteggi segnati dal telefono a bordo campo. E i genitori seguono tutto in diretta.</p>
+        <div class="row-wrap"><a class="btn btn-accent btn-lg" href="app.html?demo=1">Prova la demo</a><a class="btn btn-lg" href="accedi.html">Accedi al tuo account</a></div>
+      </div>
+      <div class="board" aria-label="Esempio di pagina live">
+        <div class="board-top"><span>Torneo di Primavera, Under 12</span><span class="live-pill"><i></i>In campo ora</span></div>
+        <div class="score"><b>Comete</b><span class="num">18<i>–</i>15</span><b>Pianeti</b></div>
+        <table class="mini" aria-label="Classifica girone A">
+          <tr><td class="p"><span class="pos-badge pos-1">1</span></td><td>Comete<small>Volley Riviera</small></td><td>6</td></tr>
+          <tr><td class="p"><span class="pos-badge pos-2">2</span></td><td>Galassie<small>Smash Academy</small></td><td>5</td></tr>
+          <tr><td class="p"><span class="pos-badge pos-3">3</span></td><td>Pianeti<small>Libertas Borgo</small></td><td>3</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="sect">
+    <h2>Tutto quello che serve, nel giorno in cui serve.</h2>
+    <p>Pensato per le società che organizzano tornei giovanili e di minivolley, con tante squadre, pochi campi e poco tempo.</p>
+    <div class="moments">
+      <div><h3>Prima</h3><ul>
+        <li><strong>Iscrizioni con un link.</strong> Le società compilano il modulo dal telefono, tu approvi con un clic.</li>
+        <li><strong>Gironi in automatico.</strong> In base ai campi disponibili, tenendo separate le squadre della stessa società.</li>
+        <li><strong>Pagina per il pubblico.</strong> Orari, menu del bar e sponsor, con un QR da appendere all'ingresso.</li>
+      </ul></div>
+      <div><h3>Durante</h3><ul>
+        <li><strong>Segnapunti dal telefono.</strong> Un link per partita: chi arbitra segna punto per punto o il risultato finale.</li>
+        <li><strong>Classifiche sempre giuste.</strong> Si aggiornano da sole a ogni set, anche sullo schermo del palazzetto.</li>
+        <li><strong>Funziona anche con il Wi-Fi ballerino.</strong> I dati si salvano appena torna la connessione.</li>
+      </ul></div>
+      <div><h3>Dopo</h3><ul>
+        <li><strong>Fasi finali in un minuto.</strong> Tabellone a eliminazione o nuovi gironi, partendo dalla classifica.</li>
+        <li><strong>Podio e stampa.</strong> Classifiche e risultati pronti da stampare o salvare in PDF.</li>
+        <li><strong>Il torneo dell'anno prossimo è già pronto.</strong> Riparti dalle stesse categorie, regole e società.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section class="rules"><div class="rules-in">
+    <div><h2>Le regole le decidi tu.</h2><p>Un punto per ogni set vinto, oppure tre alla vittoria e uno al pareggio, o una formula tutta tua. Puoi anche usare regole diverse per ogni categoria: la classifica si ricalcola all'istante.</p></div>
+    <div class="rule-list">
+      <div class="on">1 punto per set vinto<span>predefinito</span></div>
+      <div>3 alla vittoria, 1 al pareggio</div>
+      <div>2 alla vittoria, 1 al pareggio</div>
+      <div>Personalizzato<span>scegli ogni valore</span></div>
+    </div>
+  </div></section>
+
+  <section class="sect cta">
+    <h2>Provalo con un torneo vero, già pieno di partite.</h2>
+    <p>La demo funziona nel tuo browser, senza registrazione.</p>
+    <a class="btn btn-accent btn-lg" href="app.html?demo=1">Apri la demo</a>
+  </section>
+
+  <footer class="footer">VolleyHub. Progetto e idea di <a href="mailto:noemi.marcolini@gmail.com">Noemi Marcolini</a>.</footer>
+  <script>try{var t=localStorage.getItem('vh_theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script>
+</body>
+</html>
