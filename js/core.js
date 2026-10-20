@@ -55,9 +55,9 @@ export function normalizzaPrezzo(raw) {
 
 // ── Colori categorie ───────────────────────────────────────
 export const COLORI = [
-  { hex: '#2A5BD7', nome: 'Blu' },
-  { hex: '#12805C', nome: 'Verde' },
-  { hex: '#C8283C', nome: 'Rosso' },
+  { hex: '#1E40AF', nome: 'Blu' },
+  { hex: '#166534', nome: 'Verde' },
+  { hex: '#991B1B', nome: 'Rosso' },
   { hex: '#7A3FD1', nome: 'Viola' },
   { hex: '#D9730D', nome: 'Arancio' },
   { hex: '#0E8A9E', nome: 'Petrolio' },
@@ -66,6 +66,19 @@ export const COLORI = [
   { hex: '#5B6680', nome: 'Ardesia' },
   { hex: '#8B4A2B', nome: 'Mattone' },
 ];
+
+// Emoji per riconoscere le categorie a colpo d'occhio
+export const EMOJI = ['⬜', '🟩', '🟥', '🟣', '🟠', '🔵', '🟡', '⚫', '🟤', '🔴', '⚪', '🩵', '🩶', '💜', '🧡'];
+
+// Categorie proposte per un nuovo torneo
+export const CATEGORIE_DEFAULT = Object.freeze([
+  { nome: 'White', colore: '#1E40AF', emoji: '⬜' },
+  { nome: 'Green', colore: '#166534', emoji: '🟩' },
+  { nome: 'Red', colore: '#991B1B', emoji: '🟥' },
+]);
+
+// Nome della categoria con la sua emoji, come appare ovunque
+export const catNome = c => (c?.emoji ? `${c.emoji} ` : '') + (c?.nome || '');
 
 // ── Regole di punteggio ────────────────────────────────────
 // punti.perSet: punti per ogni set vinto; vittoria/pareggio/sconfitta: bonus a fine partita.
@@ -538,7 +551,7 @@ export function nuovoTorneo({ nome, data, luogo, owner, categorie, regole }) {
     owner, nome, data: data || '', luogo: luogo || '',
     createdAt: Date.now(), archiviato: false,
     regole: { punti: normalizzaPunti(regole?.punti), set: clamp(intOr(regole?.set, 2), 1, 5), timer: clamp(intOr(regole?.timer, 0), 0, 90) },
-    categorie: (categorie || []).map(c => ({ id: c.id || uid(), nome: c.nome, colore: c.colore, campi: c.campi || 0, regole: null, fasi: [] })),
+    categorie: (categorie || []).map(c => ({ id: c.id || uid(), nome: c.nome, colore: c.colore, emoji: c.emoji || '', campi: c.campi || 0, regole: null, fasi: [] })),
     societa: [],
     live: { sponsor: { attivo: false, gruppi: [] }, info: { attivo: false, blocchi: [] }, menu: { attivo: false, sezioni: [], note: '' } },
     iscrizioni: { aperte: false, scadenza: '', testoSquadre: '', testoRegolamento: 'La società, inviando questo modulo, dichiara di aver letto il regolamento del torneo e di accettarlo.', disclaimer: '', catInfo: {} },
@@ -556,7 +569,7 @@ export function normalizzaTorneo(t) {
     menu: { ...base.live.menu, ...(t.live?.menu || {}) },
   };
   out.iscrizioni = { ...base.iscrizioni, ...(t.iscrizioni || {}), catInfo: { ...(t.iscrizioni?.catInfo || {}) } };
-  out.categorie = (t.categorie || []).map(c => ({ campi: 0, regole: null, fasi: [], ...c }));
+  out.categorie = (t.categorie || []).map(c => ({ campi: 0, regole: null, fasi: [], emoji: '', ...c }));
   out.societa = (t.societa || []).map(s => ({ id: s.id || uid(), nome: s.nome || 'Società', squadre: { ...(s.squadre || {}) }, atleti: { ...(s.atleti || {}) }, logo: !!s.logo }));
   return out;
 }

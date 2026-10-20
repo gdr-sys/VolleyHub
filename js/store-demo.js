@@ -2,7 +2,7 @@
 import { uid, deepClone } from './core.js';
 import { creaTorneoDemo } from './demo-data.js';
 
-const KEY = 'vh_demo_v1';
+const KEY = 'vh_demo_v2';
 const UTENTE = { uid: 'demo', email: 'demo@volleyhub.app', anon: false };
 
 function leggi() {

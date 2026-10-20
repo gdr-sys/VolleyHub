@@ -3,10 +3,11 @@ import { getStore } from '../store.js';
 import { DEMO, link } from '../config.js';
 import { normalizzaTorneo, esc } from '../core.js';
 import { applicaTema, cambiaTema, icon, toast, conferma } from '../ui.js';
-import { S, azioni, registra, setRender, inSalvataggio, aggiornaIndicatore, salvaOra } from './stato.js';
+import { S, azioni, registra, setRender, inSalvataggio, aggiornaIndicatore, salvaOra, vai } from './stato.js';
 import { vistaHome } from './v-home.js';
 import { vistaNuovo, initNuovo } from './v-nuovo.js';
 import { vistaTorneo } from './v-torneo.js';
+import { tourSeServe, avviaTour, riavviaGuide } from './tour.js';
 
 const $ = s => document.querySelector(s);
 let unsub = [];
@@ -138,6 +139,16 @@ function disegna() {
     if (el) { el.focus({ preventScroll: true }); if (sel) try { el.setSelectionRange(...sel); } catch { /* tipo non testuale */ } }
   }
   window.scrollTo(0, sy);
+  tourSeServe(guidaDellaPagina());
+}
+
+// Quale guida mostrare nella pagina corrente
+function guidaDellaPagina() {
+  const r = S.route;
+  if (r.vista === 'home' && S.torneiPronti) return 'home';
+  if (r.vista === 'torneo' && S.torneo && r.sez === 'panoramica') return 'torneo';
+  if (r.vista === 'torneo' && S.torneo && r.sez === 'cat' && document.querySelector('.girone-opz')) return 'categoria';
+  return null;
 }
 setRender(disegna);
 
@@ -184,6 +195,12 @@ document.addEventListener('keydown', e => {
 
 registra({
   tema() { cambiaTema(); disegnaTopbar(); },
+  guida(el) {
+    el.closest('details')?.removeAttribute('open');
+    riavviaGuide();
+    const g = guidaDellaPagina() || (vai('#/'), null);
+    if (g) avviaTour(g);
+  },
   async esci() {
     if (DEMO) { location.href = link('index.html').replace(/[?&]demo=1/, ''); return; }
     if (inSalvataggio()) await salvaOra();
@@ -192,7 +209,7 @@ registra({
   },
   async resetDemo() {
     if (!await conferma('La demo tornerà allo stato iniziale e le modifiche fatte andranno perse.', { titolo: 'Ricominciare la demo?', ok: 'Ricomincia' })) return;
-    localStorage.removeItem('vh_demo_v1');
+    localStorage.removeItem('vh_demo_v2');
     location.hash = '#/';
     location.reload();
   },

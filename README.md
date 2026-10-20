@@ -10,13 +10,16 @@ Iscrizioni online, gironi automatici, segnapunti dal telefono, classifiche live 
 ## Cosa fa
 
 **Prima del torneo**
-- Procedura guidata: nome, data, luogo, categorie (con colore) e regole di gioco.
+- Procedura guidata: nome, data, luogo, categorie (White, Green, Red già pronte, con colore ed emoji) e regole di gioco.
+- Guida introduttiva al primo accesso, da rivedere quando serve dal menu account.
+- Logo dell'organizzatore su modulo di iscrizione, pagina pubblica e stampe.
 - Società con logo, squadre e atleti per categoria, referenti (visibili solo all'organizzatore).
 - Modulo di iscrizione online da condividere con un link: le richieste arrivano da approvare.
 - Gironi creati in automatico in base ai campi disponibili, separando le squadre della stessa società. Nomi di fantasia o nome della società.
 
 **Durante il torneo**
-- Punteggi inseriti direttamente sulla scheda della partita, con 1, 2 o 3 set.
+- Punteggi inseriti direttamente sulla scheda della partita.
+- Per ogni girone, sempre a portata di mano: andata e ritorno, 1, 2 o 3 set, partite a tempo con i minuti.
 - **Link segnapunti** per ogni partita (QR, WhatsApp): punto per punto in diretta o risultato finale, cronometro facoltativo, schermo sempre acceso.
 - Pagina pubblica live: classifiche, partite, tabellone, "in campo ora", squadre preferite, info, menu del bar, sponsor.
 - Modalità schermo per TV e proiettori: le classifiche scorrono da sole con il QR per il pubblico.
@@ -25,8 +28,8 @@ Iscrizioni online, gironi automatici, segnapunti dal telefono, classifiche live 
 **Dopo i gironi**
 - Fase successiva: tabellone a eliminazione (2, 4, 8, 16 squadre, finale 3° posto), nuovi gironi a serpentina, o entrambi. L'ordine di partenza si può correggere a mano.
 - Classifica avulsa tra gironi, statistiche, storico risultati.
-- Stampa (o PDF) di classifiche e risultati, volantino con QR.
-- Backup e importazione; un torneo si può riusare come modello per l'anno dopo.
+- Stampa (o PDF) di classifiche e risultati, per torneo, categoria, fase o singolo girone. Programma di sala diviso per campo, con le caselle per scrivere i punteggi a mano. Volantino con QR.
+- Backup del singolo torneo o di tutti insieme, importazione; un torneo si può riusare come modello per l'anno dopo.
 
 ### Punteggio in classifica configurabile
 

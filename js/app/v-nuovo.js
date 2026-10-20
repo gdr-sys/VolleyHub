@@ -1,18 +1,18 @@
 // Procedura guidata "Nuovo torneo"
-import { esc, uid, COLORI, PUNTI_DEFAULT, nuovoTorneo } from '../core.js';
+import { esc, uid, COLORI, PUNTI_DEFAULT, CATEGORIE_DEFAULT, nuovoTorneo } from '../core.js';
 import { icon, toast } from '../ui.js';
 import { S, registra, render, vai } from './stato.js';
-import { editorRegole, swatches } from './comp.js';
+import { editorRegole, swatches, sceltaEmoji } from './comp.js';
 
 const MODELLI = {
-  minivolley: [['White', '#2A5BD7'], ['Green', '#12805C'], ['Red', '#C8283C']],
-  under: [['Under 12', '#7A3FD1'], ['Under 13', '#D9730D'], ['Under 14', '#0E8A9E']],
+  minivolley: CATEGORIE_DEFAULT,
+  under: [{ nome: 'Under 12', colore: '#7A3FD1', emoji: '🟣' }, { nome: 'Under 13', colore: '#D9730D', emoji: '🟠' }, { nome: 'Under 14', colore: '#0E8A9E', emoji: '🔵' }],
 };
 
 export function initNuovo() {
   S.nuovo = {
     passo: 1, nome: '', data: '', luogo: '',
-    categorie: MODELLI.minivolley.map(([nome, colore]) => ({ id: uid(), nome, colore })),
+    categorie: MODELLI.minivolley.map(c => ({ id: uid(), ...c })),
     punti: { ...PUNTI_DEFAULT }, set: 2, timer: 0,
   };
 }
@@ -43,9 +43,10 @@ export function vistaNuovo() {
         <li>
           <i class="dot dot-lg" style="background:${esc(c.colore)}"></i>
           <div class="stack" style="gap:8px;flex:1;min-width:0">
-            <input class="input" id="nv-cat-${c.id}" value="${esc(c.nome)}" placeholder="Nome categoria" aria-label="Nome categoria ${i + 1}" data-i="nvCat" data-id="${c.id}" maxlength="40">
+            <div class="row" style="gap:8px">${sceltaEmoji(c.emoji, `data-c="nvEmoji" data-id="${c.id}"`)}<input class="input" id="nv-cat-${c.id}" value="${esc(c.nome)}" placeholder="Nome categoria" aria-label="Nome categoria ${i + 1}" data-i="nvCat" data-id="${c.id}" maxlength="40"></div>
             ${swatches(c.colore, `data-a="nvColore" data-id="${c.id}"`)}
           </div>
+          <div class="cat-move"><button class="btn btn-ghost btn-icon btn-sm" data-a="nvSposta" data-id="${c.id}" data-d="-1" aria-label="Sposta su" ${i === 0 ? 'disabled' : ''}>${icon('up')}</button><button class="btn btn-ghost btn-icon btn-sm" data-a="nvSposta" data-id="${c.id}" data-d="1" aria-label="Sposta giù" ${i === n.categorie.length - 1 ? 'disabled' : ''}>${icon('down')}</button></div>
           <button class="btn btn-ghost btn-icon" data-a="nvTogliCat" data-id="${c.id}" aria-label="Rimuovi ${esc(c.nome || 'categoria')}" ${n.categorie.length < 2 ? 'disabled' : ''}>${icon('trash')}</button>
         </li>`).join('')}
       </ul>
@@ -85,18 +86,25 @@ function valida(passo) {
 registra({
   nvCampo(el) { S.nuovo[el.dataset.k] = el.value; },
   nvCat(el) { const c = S.nuovo.categorie.find(x => x.id === el.dataset.id); if (c) c.nome = el.value; },
+  nvEmoji(el) { const c = S.nuovo.categorie.find(x => x.id === el.dataset.id); if (c) c.emoji = el.value; },
   nvColore(el) { const c = S.nuovo.categorie.find(x => x.id === el.dataset.id); if (c) { c.colore = el.dataset.colore; render(); } },
+  nvSposta(el) {
+    const l = S.nuovo.categorie, i = l.findIndex(x => x.id === el.dataset.id), j = i + +el.dataset.d;
+    if (i < 0 || j < 0 || j >= l.length) return;
+    [l[i], l[j]] = [l[j], l[i]];
+    render();
+  },
   nvTogliCat(el) { S.nuovo.categorie = S.nuovo.categorie.filter(x => x.id !== el.dataset.id); render(); },
   nvAggiungiCat() {
     const usati = new Set(S.nuovo.categorie.map(c => c.colore));
     const colore = (COLORI.find(c => !usati.has(c.hex)) || COLORI[0]).hex;
     const id = uid();
-    S.nuovo.categorie.push({ id, nome: '', colore });
+    S.nuovo.categorie.push({ id, nome: '', colore, emoji: '' });
     render();
     document.getElementById('nv-cat-' + id)?.focus();
   },
   nvModello(el) {
-    S.nuovo.categorie = MODELLI[el.dataset.m].map(([nome, colore]) => ({ id: uid(), nome, colore }));
+    S.nuovo.categorie = MODELLI[el.dataset.m].map(c => ({ id: uid(), ...c }));
     render();
   },
   nvAvanti() { if (valida(S.nuovo.passo)) { S.nuovo.passo++; render(); window.scrollTo(0, 0); } },
@@ -108,7 +116,7 @@ registra({
     const n = S.nuovo;
     const t = nuovoTorneo({
       nome: n.nome.trim(), data: n.data, luogo: n.luogo.trim(), owner: S.user.uid,
-      categorie: n.categorie.map(c => ({ id: c.id, nome: c.nome.trim(), colore: c.colore })),
+      categorie: n.categorie.map(c => ({ id: c.id, nome: c.nome.trim(), colore: c.colore, emoji: c.emoji || '' })),
       regole: { punti: n.punti, set: n.set, timer: n.timer },
     });
     try {

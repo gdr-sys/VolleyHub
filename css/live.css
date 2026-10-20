@@ -192,3 +192,4 @@ body.screen { background: #0C1424; color: #fff; overflow: hidden; --ink: #E9EEF8
 .sc-empty { height: 100dvh; display: grid; place-items: center; align-content: center; gap: 16px; text-align: center; }
 .sc-empty h1 { font-size: 4vw; }
 .sc-empty p { color: #9AA6BF; font-size: 1.8vw; }
+.lv-org { width: 52px; height: 52px; border-radius: 12px; background: #fff; object-fit: contain; padding: 3px; flex: none; }

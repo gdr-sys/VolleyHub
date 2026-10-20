@@ -301,3 +301,36 @@
 .sp-thumb { width: 72px; height: 72px; border-radius: 12px; border: 1.5px dashed var(--line-strong); background: #fff; display: grid; place-items: center; cursor: pointer; overflow: hidden; padding: 4px; color: var(--muted); flex-shrink: 0; }
 .sp-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .sp-thumb svg { width: 26px; height: 26px; }
+.emoji-sel { width: 68px; flex: none; padding-left: 8px; padding-right: 4px; font-size: 18px; }
+.girone-opz { display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.girone-opz .switch { gap: 8px; font-size: 14px; }
+.girone-opz .switch .track { width: 36px; height: 20px; }
+.girone-opz .switch .track::after { width: 14px; height: 14px; }
+.girone-opz .switch input:checked + .track::after { transform: translateX(16px); }
+.girone-opz .switch > span:last-child { display: inline-flex; align-items: center; gap: 4px; }
+.girone-opz .switch .ic { width: 15px; height: 15px; }
+.input-sm { padding: 5px 8px; min-height: 0; height: 32px; font-size: 14px; width: auto; }
+.org-logo { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.org-logo img, .org-logo-ph { width: 72px; height: 72px; border-radius: 12px; object-fit: contain; background: #fff; border: 1px solid var(--line); flex: none; }
+.org-logo-ph { display: grid; place-items: center; background: var(--surface-2); color: var(--muted); }
+.org-logo-ph .ic { width: 26px; height: 26px; }
+.cat-move { display: flex; flex-direction: column; gap: 2px; }
+
+/* Guida introduttiva */
+.tour { position: fixed; inset: 0; z-index: 200; }
+.tour-catch { position: absolute; inset: 0; }
+.tour-spot { position: fixed; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(10, 18, 36, .62); outline: 3px solid #FFC93C; outline-offset: 0; transition: top .25s, left .25s, width .25s, height .25s; pointer-events: none; }
+.tour.centrata .tour-spot { top: 50%; left: 50%; width: 0; height: 0; outline: 0; }
+.tour-pop { position: fixed; width: min(360px, calc(100vw - 24px)); background: var(--surface); color: var(--ink); border-radius: var(--radius); box-shadow: 0 12px 40px rgba(0, 0, 0, .35); padding: 18px 18px 14px; display: grid; gap: 8px; }
+.tour.centrata .tour-pop { top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(420px, calc(100vw - 32px)); padding: 24px 22px 16px; }
+.tour.centrata .tour-pop::before { content: ''; width: 52px; height: 52px; background: url(../assets/logo-mark.svg) center / contain no-repeat; }
+.tour-pop h2 { font-size: 19px; }
+.tour-pop p { color: var(--muted); font-size: 15px; line-height: 1.5; }
+.tour-prog { font-size: 12px; font-weight: 700; color: var(--blue, #2A5BD7); font-family: var(--font-num); letter-spacing: .02em; }
+.tour-prog:empty { display: none; }
+.tour-act { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+@media (max-width: 639px) {
+  .tour:not(.centrata) .tour-pop { left: 12px; right: 12px; bottom: 12px; width: auto; }
+  .tour.in-alto:not(.centrata) .tour-pop { bottom: auto; top: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .tour-spot { transition: none; } }

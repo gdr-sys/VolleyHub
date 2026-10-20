@@ -1,5 +1,5 @@
 // Iscrizioni online: configurazione del modulo e richieste ricevute
-import { esc, intOr, clamp, safeImg } from '../core.js';
+import { esc, catNome, intOr, clamp, safeImg } from '../core.js';
 import { link } from '../config.js';
 import { icon, toast, conferma, condividiLink, logoHtml, copia } from '../ui.js';
 import { S, registra, modifica } from './stato.js';
@@ -20,7 +20,7 @@ export function vistaIscrizioni() {
         ${i.stato === 'approvata' ? '<span class="chip chip-ok">Approvata</span>' : i.stato === 'rifiutata' ? '<span class="chip">Rifiutata</span>' : '<span class="chip chip-warn">Da valutare</span>'}</div>
       <div class="req-body">
         <div class="row-wrap small">${icon('users')}<span>${esc(i.referente)}</span>${i.tel ? `<a href="tel:${esc(String(i.tel).replace(/[^\d+]/g, ''))}">${icon('phone')}${esc(i.tel)}</a>` : ''}${i.email ? `<a href="mailto:${esc(i.email)}">${icon('mail')}${esc(i.email)}</a>` : ''}</div>
-        <div class="row-wrap" style="gap:6px">${t.categorie.map(c => intOr(i.squadre?.[c.id]) ? `<span class="chip"><i class="dot" style="background:${esc(c.colore)}"></i><span>${esc(c.nome)}: <b class="num">${intOr(i.squadre[c.id])}</b> ${intOr(i.squadre[c.id]) === 1 ? 'squadra' : 'squadre'}${intOr(i.atleti?.[c.id]) ? `, ${intOr(i.atleti[c.id])} atleti` : ''}</span></span>` : '').join('')}</div>
+        <div class="row-wrap" style="gap:6px">${t.categorie.map(c => intOr(i.squadre?.[c.id]) ? `<span class="chip"><i class="dot" style="background:${esc(c.colore)}"></i><span>${esc(catNome(c))}: <b class="num">${intOr(i.squadre[c.id])}</b> ${intOr(i.squadre[c.id]) === 1 ? 'squadra' : 'squadre'}${intOr(i.atleti?.[c.id]) ? `, ${intOr(i.atleti[c.id])} atleti` : ''}</span></span>` : '').join('')}</div>
         ${i.note ? `<p class="small note">${esc(i.note)}</p>` : ''}
       </div>
       ${i.stato === 'attesa' ? `<div class="req-actions"><button class="btn btn-sm btn-ghost" data-a="rifiutaIsc" data-id="${esc(i.id)}">Rifiuta</button><button class="btn btn-sm btn-primary" data-a="approvaIsc" data-id="${esc(i.id)}">${icon('check')}Controlla e approva</button></div>`
@@ -45,7 +45,7 @@ export function vistaIscrizioni() {
         <label class="field"><span>Scadenza iscrizioni</span><input class="input" id="isc-scad" value="${esc(isc.scadenza)}" placeholder="Es. entro domenica 10 maggio" data-c="iscCampo" data-k="scadenza" maxlength="80"></label>
         <div><span class="label">Informazioni per categoria</span>
           <div class="tbl-scroll"><table class="tbl cat-info-table"><thead><tr><th class="l">Categoria</th><th class="l">Formula</th><th class="l">Anni di nascita</th><th>Min. atleti per squadra</th></tr></thead><tbody>
-          ${t.categorie.map(c => { const ci = isc.catInfo[c.id] || {}; return `<tr><td class="l"><span class="cat-tag"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(c.nome)}</span></td>
+          ${t.categorie.map(c => { const ci = isc.catInfo[c.id] || {}; return `<tr><td class="l"><span class="cat-tag"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(catNome(c))}</span></td>
             <td class="l"><input class="input" id="ci-f-${c.id}" value="${esc(ci.formato || '')}" placeholder="Es. 3 contro 3" data-c="iscCat" data-id="${c.id}" data-k="formato" maxlength="40"></td>
             <td class="l"><input class="input" id="ci-a-${c.id}" value="${esc(ci.anni || '')}" placeholder="Es. 2016 e 2017" data-c="iscCat" data-id="${c.id}" data-k="anni" maxlength="40"></td>
             <td><input class="input input-num" id="ci-m-${c.id}" type="number" min="0" max="20" value="${ci.minAtleti || ''}" placeholder="—" data-c="iscCat" data-id="${c.id}" data-k="minAtleti" style="width:80px;margin-left:auto"></td></tr>`; }).join('')}

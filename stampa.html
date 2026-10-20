@@ -32,6 +32,25 @@
     .ms td.r { text-align: right; font-family: var(--font-num); font-size: 14px; white-space: nowrap; }
     .ms .w { font-weight: 700; }
     .podio { display: flex; gap: 16px; margin: 6px 0; font-size: 14px; }
+    .campo-t { display: flex; align-items: center; gap: 10px; font-size: 20px; color: #fff; background: #13213F; padding: 8px 12px; border-radius: 6px; margin: 18px 0 10px; break-after: avoid; }
+    .campo-t:first-of-type { margin-top: 0; }
+    .campo-t.cat-t { background: var(--c); }
+    .prog { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .prog td { padding: 6px; border-bottom: 1px solid #E3E8F0; vertical-align: middle; }
+    .prog td.n { width: 26px; color: var(--muted); font-family: var(--font-num); font-size: 14px; }
+    .prog td.vs { width: 22px; color: var(--muted); text-align: center; font-size: 11px; }
+    .prog td.sq { font-weight: 600; width: 32%; }
+    .prog td.sq.w { font-weight: 800; }
+    .prog td.cp { font-size: 11px; color: var(--muted); }
+    .prog td.r { text-align: right; font-family: var(--font-num); font-size: 15px; white-space: nowrap; }
+    .prog .nota { display: block; font-size: 11px; font-weight: 400; color: var(--muted); font-style: italic; }
+    .prog .rit td { background: #FFF6D6; font-size: 11px; font-weight: 700; color: #7A5A00; padding: 3px 6px; }
+    .box { display: inline-block; width: 28px; height: 22px; border: 1px solid #9AA6BA; border-radius: 4px; vertical-align: middle; }
+    .boxes { white-space: nowrap; }
+    .boxes i { display: inline-block; width: 12px; text-align: center; font-style: normal; color: var(--muted); }
+    .boxes .sep { width: 14px; }
+    .gir-t { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; border-left: 4px solid var(--c); padding-left: 8px; }
+    .gir-t small { color: var(--muted); font-size: 12px; font-weight: 500; }
     .flyer { text-align: center; display: grid; justify-items: center; gap: 14px; padding-top: 10mm; }
     .flyer h1 { font-size: 40px; max-width: 16ch; line-height: 1.05; }
     .flyer .meta { color: var(--muted); font-size: 17px; }
@@ -53,43 +72,74 @@
   <script type="module">
     import { getStore } from './js/store.js';
     import { link } from './js/config.js';
-    import { esc, normalizzaTorneo, formatData, regoleDi, classifica, classificaAvulsa, risolviTabellone, squadraDi, esito, descriviPunti } from './js/core.js';
+    import { esc, catNome, plurale, normalizzaTorneo, formatData, regoleDi, classifica, classificaAvulsa, risolviTabellone, squadraDi, esito, descriviPunti } from './js/core.js';
     import { qrSvg } from './js/ui.js';
     const qs = new URLSearchParams(location.search);
-    const TID = qs.get('t'), CID = qs.get('c'), TIPO = qs.get('tipo');
+    const TID = qs.get('t'), CID = qs.get('c'), FID = qs.get('f'), GID = qs.get('g'), TIPO = qs.get('tipo');
     const doc = document.getElementById('doc');
     const store = await getStore();
-    const [t0, ris] = [await store.getTorneo(TID), await store.getRisultati(TID).catch(() => ({}))];
+    const [t0, ris, media] = [await store.getTorneo(TID), await store.getRisultati(TID).catch(() => ({})), await store.getMedia(TID).catch(() => ({}))];
+    const marchio = (w) => media.org ? `<img src="${esc(media.org)}" alt="" width="${w}" style="object-fit:contain;max-height:${w}px">` : `<img src="assets/logo-mark.svg" alt="" width="${w}">`;
     if (!t0) { doc.innerHTML = '<p>Torneo non trovato.</p>'; throw new Error('torneo'); }
     const t = normalizzaTorneo(t0);
     document.title = `${t.nome} · Stampa`;
     const soc = id => t.societa.find(s => s.id === id)?.nome || '';
     const meta = [t.data ? formatData(t.data) : '', t.luogo].filter(Boolean).map(esc).join(', ');
 
+    const sets = r => esito(r)?.sets.map(([h, a]) => `${h}–${a}`).join('  ') || '';
     if (TIPO === 'volantino') {
       const url = link('live.html', { t: TID });
-      doc.innerHTML = `<div class="flyer"><img src="assets/logo-mark.svg" alt="" width="64"><h1>${esc(t.nome)}</h1>${meta ? `<p class="meta">${meta}</p>` : ''}
+      doc.innerHTML = `<div class="flyer">${marchio(80)}<h1>${esc(t.nome)}</h1>${meta ? `<p class="meta">${meta}</p>` : ''}
         <div class="qr">${await qrSvg(url)}</div><p class="call">Inquadra il codice con il telefono</p>
         <p class="sub">Classifiche, partite e risultati in tempo reale. Segui la tua squadra con la stella: nessuna app da installare.</p><code>${esc(url)}</code></div>`;
+    } else if (TIPO === 'programma') {
+      // Programma di sala: le partite dei gironi raggruppate per campo (per categoria se i campi non sono assegnati)
+      const blocchi = [];
+      for (const c of t.categorie) for (const f of c.fasi) if (f.tipo !== 'elim') for (const g of f.gironi) blocchi.push({ c, f, g, campo: (g.campo || '').trim() });
+      const conCampo = blocchi.some(b => b.campo);
+      const DEF = 'Campo da definire';
+      const gruppi = new Map();
+      for (const b of blocchi) {
+        const k = conCampo ? (b.campo || DEF) : b.c.id;
+        if (!gruppi.has(k)) gruppi.set(k, { titolo: conCampo ? k : catNome(b.c), colore: conCampo ? '' : b.c.colore, voci: [] });
+        gruppi.get(k).voci.push(b);
+      }
+      const chiavi = [...gruppi.keys()];
+      if (conCampo) chiavi.sort((a, b) => (a === DEF) - (b === DEF) || a.localeCompare(b, 'it', { numeric: true }));
+      const riga = (g, p, n) => {
+        const r = ris[p.id], e = esito(r);
+        const boxes = Array.from({ length: g.set }, () => '<span class="box"></span><i>–</i><span class="box"></span>').join('<i class="sep"></i>');
+        return `<tr><td class="n">${n}</td><td class="sq${e?.vincitore === 'h' ? ' w' : ''}">${esc(squadraDi(g, p.h).nome)}</td><td class="vs">vs</td><td class="sq${e?.vincitore === 'a' ? ' w' : ''}">${esc(squadraDi(g, p.a).nome)}${p.nota ? `<span class="nota">${esc(p.nota)}</span>` : ''}</td>
+          <td class="cp">${p.campo && p.campo !== g.campo ? esc(p.campo) : ''}</td><td class="r">${e ? sets(r) : `<span class="boxes">${boxes}</span>`}</td></tr>`;
+      };
+      doc.innerHTML = `<div class="doc-head">${marchio(48)}<div><h1>${esc(t.nome)}: programma</h1><p>${meta}${meta ? '. ' : ''}Stampato alle ${new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</p></div></div>
+      ${chiavi.map(k => { const gr = gruppi.get(k); return `<h2 class="campo-t${gr.colore ? ' cat-t' : ''}" ${gr.colore ? `style="--c:${esc(gr.colore)}"` : ''}>${esc(gr.titolo)}</h2>
+        ${gr.voci.map(({ c, f, g }) => {
+          const andata = g.partite.filter(p => (p.leg || 1) === 1), ritorno = g.partite.filter(p => p.leg === 2);
+          const giocate = g.partite.filter(p => esito(ris[p.id])).length;
+          return `<div class="blk" style="--c:${esc(c.colore)}"><h3 class="gir-t"><span>${conCampo ? esc(catNome(c)) + ', ' : ''}Girone ${esc(g.nome)}${c.fasi.filter(x => x.tipo !== 'elim').length > 1 ? ` <small>${esc(f.nome)}</small>` : ''}</span><small>${plurale(g.set, 'set', 'set')}${g.timer ? `, ${g.timer} minuti` : ''}, ${giocate}/${g.partite.length} giocate</small></h3>
+            <table class="prog"><tbody>${andata.map((p, i) => riga(g, p, i + 1)).join('')}
+            ${ritorno.length ? `<tr class="rit"><td colspan="6">Ritorno</td></tr>${ritorno.map((p, i) => riga(g, p, andata.length + i + 1)).join('')}` : ''}</tbody></table></div>`;
+        }).join('')}`; }).join('') || '<p>Non ci sono ancora gironi: crea i gironi per stampare il programma.</p>'}`;
     } else {
       const cats = t.categorie.filter(c => (!CID || c.id === CID) && c.fasi.length);
-      const sets = r => esito(r)?.sets.map(([h, a]) => `${h}–${a}`).join('  ') || '';
-      doc.innerHTML = `<div class="doc-head"><img src="assets/logo-mark.svg" alt="" width="40"><div><h1>${esc(t.nome)}</h1><p>${meta}${meta ? '. ' : ''}Aggiornato alle ${new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</p></div></div>
+      doc.innerHTML = `<div class="doc-head">${marchio(48)}<div><h1>${esc(t.nome)}</h1><p>${meta}${meta ? '. ' : ''}Aggiornato alle ${new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</p></div></div>
       ${cats.map(c => {
         const reg = regoleDi(t, c);
-        return `<section class="cat" style="--c:${esc(c.colore)}"><h2><i class="dot dot-lg" style="background:${esc(c.colore)}"></i>${esc(c.nome)}</h2>
+        return `<section class="cat" style="--c:${esc(c.colore)}"><h2><i class="dot dot-lg" style="background:${esc(c.colore)}"></i>${esc(catNome(c))}</h2>
         <p class="tiny muted">Punti: ${esc(descriviPunti(reg.punti))}. A parità: differenza set, differenza punti, punti fatti.</p>
-        ${c.fasi.map(f => {
+        ${c.fasi.filter(f => !FID || f.id === FID).map(f => {
           if (f.tipo === 'elim') {
             const res = risolviTabellone(f, ris);
             return `<div class="blk"><h3 class="fase-t">${esc(f.nome)}</h3>${res.podio ? `<div class="podio">${res.podio.map((x, i) => x ? `<span><b>${i + 1}°</b> ${esc(x.nome)}</span>` : '').join('')}</div>` : ''}
               <table class="ms">${res.tutte.map(m => `<tr><td>${esc(m.etichetta)}</td><td class="${m.vincente?.nome === m.h?.nome ? 'w' : ''}">${esc(m.h?.nome || m.hLabel)}</td><td class="${m.vincente?.nome === m.a?.nome ? 'w' : ''}">${esc(m.a?.nome || m.aLabel)}</td><td class="r">${sets(m.risultato)}</td></tr>`).join('')}</table></div>`;
           }
-          return `<h3 class="fase-t">${esc(f.nome)}</h3>${f.gironi.map(g => `<div class="blk"><h3>Girone ${esc(g.nome)}${g.campo ? `, ${esc(g.campo)}` : ''}</h3>
+          const gironi = f.gironi.filter(g => !GID || g.id === GID);
+          return `<h3 class="fase-t">${esc(f.nome)}</h3>${gironi.map(g => `<div class="blk"><h3>Girone ${esc(g.nome)}${g.campo ? `, ${esc(g.campo)}` : ''}</h3>
             <table class="tbl"><thead><tr><th class="pos">#</th><th class="l">Squadra</th><th>G</th><th>V</th><th>P</th><th>SV</th><th>SP</th><th>DP</th><th>Pt</th></tr></thead><tbody>
             ${classifica(g, ris, reg.punti).map(r => `<tr><td class="pos">${r.pos}</td><td class="l team">${esc(r.nome)}${r.socId ? `<span class="soc">${esc(soc(r.socId))}</span>` : ''}</td><td>${r.g}</td><td>${r.v}</td><td>${r.p}</td><td>${r.sv}</td><td>${r.sp}</td><td>${r.dp > 0 ? '+' : ''}${r.dp}</td><td class="pt">${r.pt}</td></tr>`).join('')}</tbody></table>
             <table class="ms">${g.partite.map(p => { const e = esito(ris[p.id]); return `<tr><td class="${e?.vincitore === 'h' ? 'w' : ''}">${esc(squadraDi(g, p.h).nome)}</td><td class="${e?.vincitore === 'a' ? 'w' : ''}">${esc(squadraDi(g, p.a).nome)}</td><td class="r">${sets(ris[p.id]) || '<span class="muted">da giocare</span>'}</td></tr>`; }).join('')}</table></div>`).join('')}
-            ${f.gironi.length > 1 ? `<div class="blk"><h3>Classifica avulsa</h3><table class="tbl"><tbody>${classificaAvulsa(f, ris, reg.punti).map((r, i) => `<tr><td class="pos">${i + 1}</td><td class="l team">${esc(r.nome)}<span class="soc">${esc(r.da)}</span></td><td class="pt">${r.pt}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
+            ${f.gironi.length > 1 && !GID ? `<div class="blk"><h3>Classifica avulsa</h3><table class="tbl"><tbody>${classificaAvulsa(f, ris, reg.punti).map((r, i) => `<tr><td class="pos">${i + 1}</td><td class="l team">${esc(r.nome)}<span class="soc">${esc(r.da)}</span></td><td class="pt">${r.pt}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
         }).join('')}</section>`;
       }).join('') || '<p>Non ci sono ancora gironi da stampare.</p>'}`;
     }

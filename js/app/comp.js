@@ -1,5 +1,5 @@
 // Componenti riutilizzati da più viste dell'app di gestione
-import { esc, COLORI, PRESET_PUNTI, presetDi, normalizzaPunti, puntiPartita, clamp, intOr, plurale } from '../core.js';
+import { esc, COLORI, EMOJI, PRESET_PUNTI, presetDi, normalizzaPunti, puntiPartita, clamp, intOr, plurale } from '../core.js';
 import { icon } from '../ui.js';
 import { S, registra, modifica, render, cat } from './stato.js';
 
@@ -31,6 +31,11 @@ export function esempioPunti(punti, nSet) {
 }
 
 // Editor delle regole di punteggio. scope: 'nuovo' | 'torneo' | 'cat:<id>'
+// Scelta dell'emoji di una categoria
+export function sceltaEmoji(attuale, attr = '') {
+  return `<select class="input emoji-sel" aria-label="Emoji" ${attr}><option value="">—</option>${EMOJI.map(e => `<option value="${e}" ${e === attuale ? 'selected' : ''}>${e}</option>`).join('')}</select>`;
+}
+
 export function editorRegole(scope, regole, { mostraSet = true, mostraTimer = true } = {}) {
   const punti = normalizzaPunti(regole.punti);
   const preset = presetDi(punti);

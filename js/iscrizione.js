@@ -1,6 +1,6 @@
 // Modulo pubblico di iscrizione delle società
 import { getStore } from './store.js';
-import { esc, normalizzaTorneo, formatData, intOr, clamp } from './core.js';
+import { esc, catNome, normalizzaTorneo, formatData, intOr, clamp } from './core.js';
 import { icon, applicaTema, comprimiImmagine, scegliFile, logoHtml, toast } from './ui.js';
 
 applicaTema();
@@ -24,12 +24,14 @@ async function avvio() {
     if (!T.iscrizioni.aperte || T.archiviato) { messaggio('Iscrizioni chiuse', `Al momento non si accettano iscrizioni per ${T.nome}. Per informazioni contatta l'organizzazione.`); return; }
     if (primo || !document.getElementById('f-nome')) disegna();
   }, () => messaggio('Torneo non disponibile', 'Riprova più tardi.'));
+  store.getMedia(TID).then(m => { LOGO = m.org || ''; const box = document.getElementById('is-org'); if (box && LOGO) box.innerHTML = `<img src="${esc(LOGO)}" alt="">`; }).catch(() => {});
 }
 
+let LOGO = '';
 function disegna() {
   const isc = T.iscrizioni;
   app.innerHTML = `
-  <header class="is-head"><div>
+  <header class="is-head"><div><div class="is-org" id="is-org">${LOGO ? `<img src="${esc(LOGO)}" alt="">` : ''}</div>
     <span class="brand-mini"><img src="assets/logo-mark.svg" alt="" width="20" height="20">Iscrizione al torneo</span>
     <h1>${esc(T.nome)}</h1>
     <p>${T.data ? `<span>${esc(formatData(T.data))}</span>` : ''}${T.luogo ? `<span>${esc(T.luogo)}</span>` : ''}</p>
@@ -55,10 +57,10 @@ function disegna() {
         const ci = isc.catInfo[c.id] || {};
         const det = [ci.formato, ci.anni ? `nati nel ${ci.anni}` : '', ci.minAtleti ? `almeno ${ci.minAtleti} atleti per squadra` : ''].filter(Boolean).join(', ');
         return `<div class="is-cat">
-          <div><span class="cat-tag"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(c.nome)}</span></div>
+          <div><span class="cat-tag"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(catNome(c))}</span></div>
           ${det ? `<small>${esc(det)}</small>` : ''}
-          <div class="cell c-sq"><span class="lbl">Squadre</span><span class="stepper"><button type="button" data-step="-1" data-for="sq-${c.id}" aria-label="Meno squadre ${esc(c.nome)}">−</button><input id="sq-${c.id}" type="number" min="0" max="20" value="0" aria-label="Squadre ${esc(c.nome)}"><button type="button" data-step="1" data-for="sq-${c.id}" aria-label="Più squadre ${esc(c.nome)}">+</button></span></div>
-          <div class="cell c-at"><span class="lbl">Atleti</span><input class="input input-num" id="at-${c.id}" type="number" min="0" max="999" placeholder="0" aria-label="Atleti ${esc(c.nome)}"></div>
+          <div class="cell c-sq"><span class="lbl">Squadre</span><span class="stepper"><button type="button" data-step="-1" data-for="sq-${c.id}" aria-label="Meno squadre ${esc(catNome(c))}">−</button><input id="sq-${c.id}" type="number" min="0" max="20" value="0" aria-label="Squadre ${esc(catNome(c))}"><button type="button" data-step="1" data-for="sq-${c.id}" aria-label="Più squadre ${esc(catNome(c))}">+</button></span></div>
+          <div class="cell c-at"><span class="lbl">Atleti</span><input class="input input-num" id="at-${c.id}" type="number" min="0" max="999" placeholder="0" aria-label="Atleti ${esc(catNome(c))}"></div>
         </div>`;
       }).join('')}</div>
       <label class="field"><span>Note per l'organizzazione <span class="hint">(facoltative)</span></span><textarea class="input" id="f-note" maxlength="500" placeholder="Es. arriviamo alle 9:30, una squadra mista"></textarea></label>
@@ -114,7 +116,7 @@ async function invia(e) {
     atleti[c.id] = clamp(intOr(v('at-' + c.id)), 0, 999);
     tot += squadre[c.id];
     const min = intOr(T.iscrizioni.catInfo[c.id]?.minAtleti);
-    if (min && squadre[c.id] && atleti[c.id] < squadre[c.id] * min) return errore(`${c.nome}: per ${squadre[c.id]} squadre servono almeno ${squadre[c.id] * min} atleti.`, 'at-' + c.id);
+    if (min && squadre[c.id] && atleti[c.id] < squadre[c.id] * min) return errore(`${catNome(c)}: per ${squadre[c.id]} squadre servono almeno ${squadre[c.id] * min} atleti.`, 'at-' + c.id);
   }
   if (!tot) return errore('Indica almeno una squadra in una categoria.');
   if (!document.getElementById('f-ok').checked) return errore('Per inviare il modulo devi accettare il regolamento.', 'f-ok');

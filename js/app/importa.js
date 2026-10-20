@@ -11,6 +11,9 @@ export async function esportaTorneo(store, tid, torneo) {
 
 // Restituisce un elenco di { torneo, risultati, media, contatti } pronti da salvare
 export function leggiFileImport(json) {
+  if (json?.formato === FORMATO && Array.isArray(json.tornei)) {
+    return json.tornei.filter(x => x?.torneo).map(x => ({ torneo: normalizzaTorneo(x.torneo), risultati: x.risultati || {}, media: x.media || {}, contatti: x.contatti || {} }));
+  }
   if (json?.formato === FORMATO && json.torneo) {
     return [{ torneo: normalizzaTorneo(json.torneo), risultati: json.risultati || {}, media: json.media || {}, contatti: json.contatti || {} }];
   }
@@ -20,13 +23,14 @@ export function leggiFileImport(json) {
   return vecchi.map(convertiVecchio);
 }
 
-const V_COLORI = { white: '#2A5BD7', green: '#12805C', red: '#C8283C' };
+const V_COLORI = { white: '#1E40AF', green: '#166534', red: '#991B1B' };
+const V_EMOJI = { white: '⬜', green: '🟩', red: '🟥' };
 
 function convertiVecchio(v) {
   const risultati = {}, media = {}, contatti = {};
   // Categorie: formato attuale categorie[] o storico cats{white,green,red}
   let cats = v.categorie;
-  if (!cats && v.cats) cats = Object.entries(v.cats).map(([id, c]) => ({ id, nome: id[0].toUpperCase() + id.slice(1), colore: V_COLORI[id], fasi: c.fasi || [] }));
+  if (!cats && v.cats) cats = Object.entries(v.cats).map(([id, c]) => ({ id, nome: id[0].toUpperCase() + id.slice(1), colore: V_COLORI[id], emoji: V_EMOJI[id], fasi: c.fasi || [] }));
   cats = cats || [];
 
   const societa = (v.societa || []).map(s => {
@@ -57,7 +61,7 @@ function convertiVecchio(v) {
       });
       fasi.push({ id: uid(), nome: f.label || 'Fase', tipo: 'gironi', gironi });
     }
-    return { id: c.id || uid(), nome: c.nome || 'Categoria', colore: /^#[0-9a-f]{6}$/i.test(c.colore || '') ? c.colore : '#2A5BD7', campi: 0, regole: null, fasi };
+    return { id: c.id || uid(), nome: c.nome || 'Categoria', colore: /^#[0-9a-f]{6}$/i.test(c.colore || '') ? c.colore : '#1E40AF', emoji: String(c.emoji || '').slice(0, 8), campi: 0, regole: null, fasi };
   });
 
   const cfg = v.pageConfig || {}, isc = v.iscrizioniConfig || {};
@@ -83,6 +87,7 @@ function convertiVecchio(v) {
     },
   });
   if (!torneo.iscrizioni.testoRegolamento) torneo.iscrizioni.testoRegolamento = normalizzaTorneo({}).iscrizioni.testoRegolamento;
+  if (/^data:image|^https:/.test(isc.logoOrg || '')) media.org = isc.logoOrg;
   return { torneo, risultati, media, contatti };
 }
 

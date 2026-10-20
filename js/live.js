@@ -2,6 +2,7 @@
 import { getStore } from './store.js';
 import { link, DEMO } from './config.js';
 import {
+  catNome,
   esc, normalizzaTorneo, regoleDi, classifica, risolviTabellone, squadraDi, esito, isFinita, isInCorso, setDa,
   elencoPartite, formatData, formatOra, normalizzaPrezzo, safeImg, plurale, descriviPunti,
 } from './core.js';
@@ -53,7 +54,7 @@ function disegna() {
   const sy = window.scrollY;
   const t = L.t;
   const sezioni = [
-    ...t.categorie.filter(c => c.fasi.length).map(c => ({ k: c.id, label: c.nome, colore: c.colore })),
+    ...t.categorie.filter(c => c.fasi.length).map(c => ({ k: c.id, label: catNome(c), colore: c.colore })),
     ...(FAV.size ? [{ k: 'mie', label: 'Le mie squadre', ic: 'star' }] : []),
     ...(t.live.info.attivo && t.live.info.blocchi.length ? [{ k: 'info', label: 'Info', ic: 'info' }] : []),
     ...(t.live.menu.attivo && t.live.menu.sezioni.length ? [{ k: 'menu', label: 'Menu', ic: 'utensils' }] : []),
@@ -76,7 +77,7 @@ function disegna() {
   app.innerHTML = `
     <header class="lv-head">
       <div class="lv-head-in">
-        <img src="assets/logo-mark.svg" alt="" width="40" height="40" class="lv-mark">
+        ${L.media.org ? `<img src="${esc(L.media.org)}" alt="" class="lv-mark lv-org">` : '<img src="assets/logo-mark.svg" alt="" width="40" height="40" class="lv-mark">'}
         <div class="lv-title"><h1>${esc(t.nome)}</h1>
           <p>${t.data ? `<span>${esc(formatData(t.data))}</span>` : ''}${t.luogo ? `<span>${icon('pin')}${esc(t.luogo)}</span>` : ''}</p></div>
         <div class="lv-tools">
@@ -102,7 +103,7 @@ function punteggioLive(r) {
 }
 function cardInCampo(p) {
   return `<div class="lv-now-card" style="--c:${esc(p.cat.colore)}">
-    <span class="lv-now-meta">${esc(p.cat.nome)}${p.campo ? `, ${esc(p.campo)}` : ''}</span>
+    <span class="lv-now-meta">${esc(catNome(p.cat))}${p.campo ? `, ${esc(p.campo)}` : ''}</span>
     <span class="lv-now-teams"><b>${esc(p.h?.nome || p.hLabel)}</b><b>${esc(p.a?.nome || p.aLabel)}</b></span>
     <span class="lv-now-score num">${punteggioLive(p.risultato)}</span>
   </div>`;
@@ -207,7 +208,7 @@ function vistaMie() {
     const prossima = partite.find(p => !isFinita(p.risultato) && p.pronta);
     const giocate = partite.filter(p => isFinita(p.risultato)).reverse();
     out.push(`<section class="lv-card mie" style="--c:${esc(c.colore)}">
-      <header>${logoHtml(logoSoc(socId), nomeSoc(socId) || nome, true)}<div style="flex:1;min-width:0"><h2>${esc(nome)}</h2><span class="muted small">${esc(c.nome)}${socId ? `, ${esc(nomeSoc(socId))}` : ''}</span></div>${stella(catId, nome)}</header>
+      <header>${logoHtml(logoSoc(socId), nomeSoc(socId) || nome, true)}<div style="flex:1;min-width:0"><h2>${esc(nome)}</h2><span class="muted small">${esc(catNome(c))}${socId ? `, ${esc(nomeSoc(socId))}` : ''}</span></div>${stella(catId, nome)}</header>
       <div class="mie-body">
         ${pos ? `<div class="mie-pos"><b class="num">${pos.pos}°</b><span>${esc(girone)}<br><strong class="num">${pos.pt}</strong> punti in ${plurale(pos.g, 'partita', 'partite')}</span></div>` : ''}
         ${prossima ? `<div class="mie-next"><span class="label">${isInCorso(prossima.risultato) ? 'In campo ora' : 'Prossima partita'}</span><strong>${esc(prossima.h?.nome)} – ${esc(prossima.a?.nome)}</strong><span class="muted small">${esc(prossima.etichetta)}${prossima.campo ? `, ${esc(prossima.campo)}` : ''}</span>${isInCorso(prossima.risultato) ? `<span class="num mie-score">${punteggioLive(prossima.risultato)}</span>` : ''}</div>` : ''}
@@ -243,8 +244,8 @@ function slides() {
     const fasiG = c.fasi.filter(f => f.tipo !== 'elim');
     const ultimaG = fasiG[fasiG.length - 1];
     for (const f of c.fasi) {
-      if (f.tipo === 'elim') out.push({ tipo: 'elim', c, f, titolo: `${c.nome}: ${f.nome}` });
-      else if (f === ultimaG) for (const g of f.gironi) out.push({ tipo: 'girone', c, f, g, titolo: `${c.nome}: girone ${g.nome}` });
+      if (f.tipo === 'elim') out.push({ tipo: 'elim', c, f, titolo: `${catNome(c)}: ${f.nome}` });
+      else if (f === ultimaG) for (const g of f.gironi) out.push({ tipo: 'girone', c, f, g, titolo: `${catNome(c)}: girone ${g.nome}` });
     }
   }
   return out;
@@ -257,7 +258,7 @@ function disegnaSchermo() {
   const s = lista[SC.i];
   let corpo = '';
   if (s.tipo === 'campo') {
-    corpo = `<div class="sc-campo">${s.partite.map(p => `<div class="sc-live" style="--c:${esc(p.cat.colore)}"><span class="sc-live-meta">${esc(p.cat.nome)}${p.campo ? `, ${esc(p.campo)}` : ''}</span><div class="sc-live-row"><b>${esc(p.h?.nome || p.hLabel)}</b><span class="num">${punteggioLive(p.risultato)}</span><b>${esc(p.a?.nome || p.aLabel)}</b></div></div>`).join('')}</div>`;
+    corpo = `<div class="sc-campo">${s.partite.map(p => `<div class="sc-live" style="--c:${esc(p.cat.colore)}"><span class="sc-live-meta">${esc(catNome(p.cat))}${p.campo ? `, ${esc(p.campo)}` : ''}</span><div class="sc-live-row"><b>${esc(p.h?.nome || p.hLabel)}</b><span class="num">${punteggioLive(p.risultato)}</span><b>${esc(p.a?.nome || p.aLabel)}</b></div></div>`).join('')}</div>`;
   } else if (s.tipo === 'girone') {
     const reg = regoleDi(L.t, s.c);
     const cl = classifica(s.g, L.ris, reg.punti);

@@ -1,5 +1,5 @@
 // Elenco dei tornei
-import { esc, plurale, squadreTotali, normalizzaTorneo } from '../core.js';
+import { esc, catNome, plurale, squadreTotali, normalizzaTorneo } from '../core.js';
 import { link } from '../config.js';
 import { icon, toast, conferma, scaricaFile, scegliFile, slug, modal } from '../ui.js';
 import { S, registra, vai, render } from './stato.js';
@@ -22,7 +22,7 @@ function rigaTorneo(t) {
       <span class="t-info">
         <strong>${esc(t.nome)}</strong>
         <span class="t-meta"><span>${esc(data)}</span>${t.luogo ? `<span>${icon('pin')}${esc(t.luogo)}</span>` : ''}</span>
-        <span class="t-cats">${(t.categorie || []).map(c => `<span class="cat-tag small"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(c.nome)}</span>`).join('')}
+        <span class="t-cats">${(t.categorie || []).map(c => `<span class="cat-tag small"><i class="dot" style="background:${esc(c.colore)}"></i>${esc(catNome(c))}</span>`).join('')}
           <span class="muted small">${plurale(t.societa?.length || 0, 'società', 'società')}, ${plurale(tot, 'squadra', 'squadre')}</span></span>
       </span>
     </a>
@@ -52,6 +52,7 @@ export function vistaHome() {
   const archiviati = tutti.filter(t => t.archiviato && filtra(t));
 
   const azioniTesta = `<div class="row-wrap">
+      <button class="btn btn-ghost" data-a="esportaTutti" title="Scarica un unico file con tutti i tornei">${icon('download')}Backup di tutti</button>
       <button class="btn" data-a="importa">${icon('upload')}Importa</button>
       <a class="btn btn-accent" href="#/nuovo">${icon('plus')}Nuovo torneo</a>
     </div>`;
@@ -131,6 +132,15 @@ registra({
     const json = await esportaTorneo(S.store, id, dati);
     scaricaFile(`${slug(t.nome)}-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(json, null, 2));
     toast('Backup scaricato');
+  },
+
+  async esportaTutti() {
+    if (!S.tornei.length) return;
+    toast('Preparo il backup…');
+    const tornei = [];
+    for (const t of S.tornei) { const { id, ...dati } = t; tornei.push(await esportaTorneo(S.store, id, dati)); }
+    scaricaFile(`volleyhub-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({ formato: 'volleyhub', versione: 1, esportatoIl: new Date().toISOString(), tornei }, null, 2));
+    toast(`Backup di ${plurale(tornei.length, 'torneo', 'tornei')} scaricato`);
   },
 
   async archivia(el) {

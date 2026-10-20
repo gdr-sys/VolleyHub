@@ -1,5 +1,6 @@
 // Pagina di una categoria: creazione gironi, risultati, tabellone, classifiche, fasi successive
 import {
+  catNome,
   esc, uid, plurale, clamp, intOr, regoleDi, descriviPunti, squadreTotali, suggerisciGironi, dimensioniUniformi,
   creaGironi, classifica, classificaAvulsa, risolviTabellone, creaTabellone, DIMENSIONI_TABELLONE, setDa, setPerDb,
   validaSet, isFinita, isInCorso, esito, rigeneraPartite, generaPartite, squadraDi, serpentina, statisticheCategoria,
@@ -18,7 +19,7 @@ export function vistaCategoria(c) {
   const b = S.builder[c.id];
   const tab = S.catTab[c.id] || 'partite';
   const head = `<div class="page-head cat-head" style="--cat:${esc(c.colore)}">
-      <div><h1 class="cat-title"><i class="dot dot-xl" style="background:${esc(c.colore)}"></i>${esc(c.nome)}</h1>
+      <div><h1 class="cat-title"><i class="dot dot-xl" style="background:${esc(c.colore)}"></i>${esc(catNome(c))}</h1>
         <p class="muted small" style="margin-top:6px">${esc(descriviPunti(reg.punti))}, ${plurale(reg.set, 'set', 'set')} per partita${reg.personalizzate ? ' (regole della categoria)' : ''}</p></div>
       <div class="row-wrap">
         ${c.fasi.length ? `<a class="btn" href="${esc(link('stampa.html', { t: S.tid, c: c.id }))}" target="_blank" rel="noopener">${icon('print')}Stampa</a>` : ''}
@@ -115,6 +116,8 @@ function vistaPartite(c) {
         <details class="menu"><summary class="btn btn-ghost btn-icon btn-sm" aria-label="Azioni fase">${icon('more')}</summary><div class="menu-list">
           <button data-a="rinominaFase" data-cat="${c.id}" data-id="${f.id}">${icon('edit')}Rinomina</button>
           ${f.tipo !== 'elim' ? `<button data-a="aggiungiGirone" data-cat="${c.id}" data-id="${f.id}">${icon('plus')}Aggiungi girone</button>` : ''}
+          <a href="${esc(link('stampa.html', { t: S.tid, c: c.id, f: f.id }))}" target="_blank" rel="noopener">${icon('print')}${f.tipo === 'elim' ? 'Stampa tabellone' : 'Stampa fase'}</a>
+          <button data-a="azzeraFase" data-cat="${c.id}" data-id="${f.id}">${icon('reset')}Azzera risultati</button>
           <button class="danger" data-a="eliminaFase" data-cat="${c.id}" data-id="${f.id}">${icon('trash')}Elimina fase</button>
         </div></details>
       </header>
@@ -142,16 +145,22 @@ function vistaGirone(c, f, g) {
     meta: [p.leg === 2 ? 'Ritorno' : '', p.campo || ''].filter(Boolean), nota: p.nota, campoGirone: g.campo,
     ctx: `data-cat="${c.id}" data-fase="${f.id}" data-gir="${g.id}"`,
   });
+  const gctx = `data-cat="${c.id}" data-fase="${f.id}" data-gir="${g.id}"`;
   return `<section class="girone" style="--cat:${esc(c.colore)}">
     <header class="girone-head">
       <h3>Girone ${esc(g.nome)}</h3>
       ${g.campo ? `<span class="chip">${icon('pin')}${esc(g.campo)}</span>` : ''}
-      <span class="chip">${plurale(g.set, 'set', 'set')}${g.ritorno ? ', andata e ritorno' : ''}</span>
-      ${g.timer ? `<span class="chip">${icon('clock')}${g.timer} min</span>` : ''}
+      <span class="muted small num">${giocate}/${g.partite.length} partite</span>
       <span class="spacer"></span>
-      <span class="muted small num">${giocate}/${g.partite.length}</span>
-      <button class="btn btn-sm" data-a="modificaGirone" data-cat="${c.id}" data-fase="${f.id}" data-gir="${g.id}">${icon('edit')}Modifica</button>
+      <a class="btn btn-sm btn-ghost btn-icon" href="${esc(link('stampa.html', { t: S.tid, c: c.id, f: f.id, g: g.id }))}" target="_blank" rel="noopener" title="Stampa il girone" aria-label="Stampa il girone ${esc(g.nome)}">${icon('print')}</a>
+      <button class="btn btn-sm" data-a="modificaGirone" ${gctx}>${icon('edit')}Modifica</button>
     </header>
+    <div class="girone-opz">
+      <label class="switch" title="Andata e ritorno"><input type="checkbox" ${g.ritorno ? 'checked' : ''} data-c="girRitorno" ${gctx}><span class="track"></span><span>A/R</span></label>
+      <label class="row" style="gap:6px"><span class="sr-only">Set per partita</span><select class="input input-sm" data-c="girSet" ${gctx}>${[1, 2, 3].concat(g.set > 3 ? [g.set] : []).map(n => `<option value="${n}" ${n === g.set ? 'selected' : ''}>${plurale(n, 'set', 'set')}</option>`).join('')}</select></label>
+      <label class="switch" title="Partita a tempo: il segnapunti vede il cronometro"><input type="checkbox" ${g.timer ? 'checked' : ''} data-c="girTempo" ${gctx}><span class="track"></span><span>${icon('clock')}Tempo</span></label>
+      ${g.timer ? `<label class="row" style="gap:6px"><input class="input input-sm input-num" id="gt-${g.id}" type="number" min="1" max="90" value="${g.timer}" style="width:64px" aria-label="Minuti per partita" data-c="girMinuti" ${gctx}><span class="small muted">min</span></label>` : ''}
+    </div>
     <div class="girone-body">
       <div class="girone-cl">
         <table class="tbl tbl-compact"><thead><tr><th class="pos">#</th><th class="l">Squadra</th><th title="Partite giocate">G</th><th title="Punti">Pt</th></tr></thead><tbody>
@@ -294,7 +303,7 @@ function vistaStatistiche(c) {
 function vistaRegole(c) {
   const t = S.torneo, reg = regoleDi(t, c);
   return `<section class="panel"><div class="panel-head"><h2>Regole di punteggio</h2></div><div class="panel-body stack-lg">
-    <label class="switch"><input type="checkbox" ${c.regole ? 'checked' : ''} data-c="regoleProprie" data-id="${c.id}"><span class="track"></span><span>Usa regole diverse da quelle del torneo per ${esc(c.nome)}</span></label>
+    <label class="switch"><input type="checkbox" ${c.regole ? 'checked' : ''} data-c="regoleProprie" data-id="${c.id}"><span class="track"></span><span>Usa regole diverse da quelle del torneo per ${esc(catNome(c))}</span></label>
     ${c.regole ? editorRegole('cat:' + c.id, reg) : `<div class="note">Questa categoria segue le regole del torneo: <strong>${esc(descriviPunti(t.regole.punti))}</strong>, ${plurale(t.regole.set, 'set', 'set')} per partita. <a href="${hashTorneo('impostazioni')}">Cambiale nelle impostazioni</a>.</div>`}
   </div></section>`;
 }
@@ -498,6 +507,38 @@ registra({
   },
 
   // Gironi e fasi
+  async girRitorno(el) {
+    const g = girone(el);
+    if (!g) return;
+    const ritorno = el.checked;
+    const persi = ritorno ? [] : g.partite.filter(p => p.leg === 2 && S.risultati[p.id]).map(p => p.id);
+    if (persi.length && !await conferma(`Togliendo il ritorno ${persi.length === 1 ? 'verrà cancellato 1 risultato già inserito' : `verranno cancellati ${persi.length} risultati già inseriti`}.`, { titolo: 'Togliere il ritorno?', ok: 'Togli il ritorno', pericolo: true })) { el.checked = true; return; }
+    modifica(() => { g.ritorno = ritorno; g.partite = rigeneraPartite(g); });
+    if (persi.length) await S.store.delRisultati(S.tid, persi);
+    toast(ritorno ? 'Aggiunte le partite di ritorno' : 'Partite di ritorno tolte');
+  },
+  async girSet(el) {
+    const g = girone(el);
+    const n = +el.value;
+    if (!g || n === g.set) return;
+    const giocate = g.partite.filter(p => S.risultati[p.id]).length;
+    if (giocate && !await conferma(`Ci sono già ${plurale(giocate, 'risultato', 'risultati')}. ${n < g.set ? `I punteggi dei set oltre il ${n}° verranno cancellati.` : 'I set in più resteranno da compilare.'}`, { titolo: `Passare a ${plurale(n, 'set', 'set')}?`, ok: 'Cambia' })) { el.value = g.set; return; }
+    modifica(() => { g.set = n; });
+    // I set oltre il nuovo numero non contano più: li togliamo dai risultati
+    for (const p of g.partite) {
+      const r = S.risultati[p.id];
+      if (r && setDa(r).length > n) await S.store.setRisultato(S.tid, p.id, { ...r, set: setPerDb(setDa(r).slice(0, n)) });
+    }
+  },
+  girTempo(el) {
+    const g = girone(el);
+    if (!g) return;
+    modifica(() => {
+      if (el.checked) g.timer = g.timerPrec || 12;
+      else { g.timerPrec = g.timer; g.timer = 0; }
+    });
+  },
+  girMinuti(el) { const g = girone(el); if (g) modifica(() => { g.timer = clamp(intOr(el.value, 12), 1, 90); }); },
   modificaGirone(el) { const c = cat(el.dataset.cat); finestraGirone(c, fase(c.id, el.dataset.fase), girone(el)); },
   async rinominaFase(el) {
     chiudiMenu(el);
